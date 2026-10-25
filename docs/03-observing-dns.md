@@ -6,7 +6,22 @@ then classify it.
 1. Set up AdGuard Home (route 2, option A) and point only the TV at it.
 2. Use the TV normally for a day or two: home screen, YouTube, Netflix,
    settings.
-3. Export the query log (AdGuard Home web UI or its `/control/querylog` API).
+3. Export the query log: from the AdGuard Home web UI, or with
+   `scripts/fetch_query_log.py`, which pulls it from the `/control/querylog`
+   API of your own AdGuard Home.
+
+   Credential and data hygiene:
+
+   - Never put the password on the command line (it lands in your shell
+     history), in a chat, or in any file you might commit. The script asks
+     for it without echo, or reads `ADGUARD_PASSWORD` from the environment
+     of that one command.
+   - Run it only against your own AdGuard Home on your own network. The
+     script refuses HTTP redirects so your credentials cannot be forwarded
+     to a different address. Prefer HTTPS if your AdGuard Home has it.
+   - The exported `querylog.json` is a record of what your TV looked up:
+     treat it as private browsing data. Keep it local and never commit it
+     (it is covered by `.gitignore` along with `.env`).
 4. Run `scripts/classify_dns_log.py` on the export. It aggregates domains,
    marks which are already covered by the upstream blocklist, and prints
    candidate rules for the rest.
@@ -16,6 +31,8 @@ then classify it.
 Never add a domain you have not observed your own TV resolve.
 
 ```sh
+python3 scripts/fetch_query_log.py --host http://192.168.1.10:3000 \
+    --user admin -o querylog.json
 python3 scripts/classify_dns_log.py querylog.json \
     --client 192.168.1.50 \
     --blocklist Blocked_Domains.txt \
