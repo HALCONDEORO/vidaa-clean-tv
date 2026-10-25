@@ -3,6 +3,12 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-25 - Upstream format compatibility
+
+- load_blocklist and validate_blocklist skip '//' comments (the current upstream annotated edition uses them; loading it previously misread 575 comment lines).
+- validate_blocklist accepts hyphenated hostnames (previously rejected real domains like ad-cmp.hismarttv.com; found by validating the live upstream list: 137 rules valid).
+- End-to-end pipeline test: paged fetch against a local server, then classify + blocklist matching - the exact docs/03 flow.
+
 ## 2026-10-25 - Paginated query-log export
 
 - fetch_query_log.py --pages N: keeps fetching older query-log pages until a short page (previously one page only, so long observation windows were silently truncated). Single-page default unchanged. When the export stops on a full page, it warns that older entries may remain (a full page means possible truncation, not certain truncation).
