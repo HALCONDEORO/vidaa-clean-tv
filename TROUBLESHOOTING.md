@@ -27,10 +27,12 @@ waits for a blocked resource and then falls back to a cache. It usually
 settles in a few seconds. If it does not, disable the functional group that
 causes it.
 
-## The TV sends queued telemetry when I unblock
+## Requests increase after I unblock
 
-Expected. A TV may retain events locally while DNS fails and send them when
-it can resolve again. Firmware-dependent and not publicly documented.
+A possible explanation is that a TV retains events locally while DNS fails
+and sends them when it can resolve again. This is a hypothesis, not a verified
+behavior of the target TV; firmware behavior is unknown. A burst of requests
+alone does not establish what data was sent.
 
 ## fetch_query_log.py: "Cannot reach ..."
 
