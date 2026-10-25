@@ -3,6 +3,10 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-25 - Claim alignment in docs/01
+
+- docs/01-on-device-settings.md: removed absolutes ("Risk: none", "stops reporting what you watch", "breaks nothing") that survived the earlier editorial pass; effects on the target TV are now labeled documented-but-unverified, matching CONTRIBUTING.md and the README/TROUBLESHOOTING wording.
+
 ## 2026-10-25 - Upstream format compatibility
 
 - load_blocklist and validate_blocklist skip '//' comments (the current upstream annotated edition uses them; loading it previously misread 575 comment lines).
