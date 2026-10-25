@@ -1,0 +1,5 @@
+# Local DNS query exports are private browsing data
+querylog*.json
+*.log
+.env
+__pycache__/
