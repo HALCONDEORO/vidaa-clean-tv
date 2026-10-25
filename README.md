@@ -14,7 +14,7 @@ Clean Your TV and similar tools disable packages over ADB. VIDAA has no ADB, no 
 
 1. **On-device settings** (about 5 minutes with the remote, fully reversible) - [docs/01-on-device-settings.md](docs/01-on-device-settings.md)
 2. **DNS filtering on your network** - [docs/02-dns-filtering.md](docs/02-dns-filtering.md)
-3. **Observing what your TV actually talks to**, so block rules come from evidence, not guesses - [docs/03-observing-dns.md](docs/03-observing-dns.md) and [scripts/classify_dns_log.py](scripts/classify_dns_log.py)
+3. **Observing what your TV actually talks to**, so block rules come from evidence, not guesses - [docs/03-observing-dns.md](docs/03-observing-dns.md), [scripts/fetch_query_log.py](scripts/fetch_query_log.py) and [scripts/classify_dns_log.py](scripts/classify_dns_log.py)
 
 ## What this project does NOT do
 
@@ -31,7 +31,7 @@ Clean Your TV and similar tools disable packages over ADB. VIDAA has no ADB, no 
 
 ## Development
 
-`python3 scripts/test_classify_dns_log.py -v` runs the offline test suite (11 tests, stdlib only). CI runs it on every push and pull request across Python 3.10-3.13.
+`python3 scripts/test_classify_dns_log.py -v` runs the offline test suite (stdlib only). CI runs it, plus a syntax and duplicate validation of the supplement blocklist, on every push and pull request across Python 3.10-3.13.
 
 ## Hardware verification status
 
