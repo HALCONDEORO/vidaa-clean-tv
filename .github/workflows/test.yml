@@ -21,3 +21,5 @@ jobs:
       # Stdlib only, no dependencies to install. The suite runs fully offline.
       - name: Run tests
         run: python3 scripts/test_classify_dns_log.py -v
+      - name: Validate supplement blocklist
+        run: python3 scripts/validate_blocklist.py blocklists/toshiba-uv1553db-supplement.txt
