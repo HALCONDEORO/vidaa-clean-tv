@@ -36,8 +36,8 @@ VIDAA sets have no debug bridge, so the cleanup happens where the system does al
 
 | Part | What it looks like |
 |---|---|
-| **Content recognition off** | The TV stops reporting what you watch - over apps, HDMI and broadcast alike. |
-| **Ads without a profile of you** | Ads can still appear. The documented personalization toggle can be disabled; its effect has not been verified on the target TV. |
+| **Content recognition off** | Turns off the documented content-recognition setting. Its exact scope and effect depend on firmware and remain unverified on the target TV. |
+| **Advertising personalization setting** | Ads can still appear. The documented personalization toggle can be disabled; its effect has not been verified on the target TV. |
 | **A cleaner home screen (DNS route)** | The upstream blocklist author reports recommendation rows, promo tiles and VIDAA Free promos gone, with YouTube and Netflix intact. |
 | **A test log, not promises** | [TESTING.md](TESTING.md) records exactly what was verified, on which model and when. Nothing else is claimed. |
 
