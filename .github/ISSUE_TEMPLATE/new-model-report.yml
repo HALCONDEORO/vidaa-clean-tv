@@ -1,0 +1,47 @@
+name: New VIDAA model report
+description: Report settings paths and cleanup results on a VIDAA model not yet in docs/tv/
+title: "[model]: "
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Brand and model
+      description: For example "Toshiba 50UV1553DB" or "Hisense 55A7G".
+      placeholder: Brand + model number
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region / country
+      description: Menu wording and firmware vary by region.
+      placeholder: e.g. Spain, Germany
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version
+      description: Settings > Support > System info, or the closest equivalent on your set.
+    validations:
+      required: true
+  - type: textarea
+    id: menus
+    attributes:
+      label: Menu paths as shown on your screen
+      description: Write the names exactly as the TV shows them, even where they differ from the docs.
+      placeholder: "Settings > ... > ..."
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What changed (and anything you reverted)
+      description: Which steps from the docs worked, which did not, and what you reverted.
+  - type: checkboxes
+    id: honesty
+    attributes:
+      label: Verification rule
+      options:
+        - label: I understand this report enters TESTING.md only as a logged session with the details above.
+          required: true
