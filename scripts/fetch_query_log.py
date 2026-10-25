@@ -59,17 +59,56 @@ def fetch_page(host, user, password, limit, offset=0):
         return json.loads(resp.read().decode("utf-8"))
 
 
+def fetch_all_pages(host, user, password, limit, pages):
+    """Fetch up to `pages` consecutive pages and merge their 'data' lists.
+
+    Stops early when a page comes back short (fewer entries than `limit`),
+    which marks the oldest available entries. Returns
+    (merged_dict, pages_fetched, maybe_more): maybe_more is True when fetching
+    stopped on a full page, i.e. the export may be incomplete.
+    """
+    merged = None
+    fetched = 0
+    last_len = 0
+    for i in range(pages):
+        page = fetch_page(host, user, password, limit, offset=i * limit)
+        if not isinstance(page, dict) or not isinstance(page.get("data"), list):
+            raise ValueError("Unexpected response from AdGuard Home: expected an object with a 'data' list")
+        fetched = i + 1
+        last_len = len(page["data"])
+        if merged is None:
+            merged = page
+        else:
+            merged["data"].extend(page["data"])
+        if last_len < limit:
+            break
+    # Stopping on a full page means the log MAY hold older entries (possible,
+    # not certain: the log might end exactly on a page boundary).
+    return merged, fetched, last_len == limit
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", required=True, help="AdGuard Home base URL, e.g. http://192.168.1.10:3000")
     ap.add_argument("--user", required=True, help="AdGuard Home admin username")
-    ap.add_argument("--limit", type=int, default=500, help="Max entries (default: 500)")
+    ap.add_argument("--limit", type=int, default=500, help="Max entries per page (default: 500)")
+    ap.add_argument("--pages", type=int, default=1,
+                    help="Pages to fetch, continuing to older entries until a short page (default: 1, max: 100)")
     ap.add_argument("-o", "--output", required=True, help="Output JSON file for classify_dns_log.py")
     args = ap.parse_args()
 
+    if not 1 <= args.pages <= 100:
+        sys.exit("--pages must be between 1 and 100")
+
     password = os.environ.get("ADGUARD_PASSWORD") or getpass.getpass("AdGuard Home password: ")
     try:
-        data = fetch_page(args.host, args.user, password, args.limit)
+        if args.pages == 1:
+            data = fetch_page(args.host, args.user, password, args.limit)
+            pages_fetched = 1
+            maybe_more = isinstance(data, dict) and len(data.get("data", [])) == args.limit
+        else:
+            data, pages_fetched, maybe_more = fetch_all_pages(
+                args.host, args.user, password, args.limit, args.pages)
     except urllib.error.HTTPError as e:
         if e.code in (301, 302, 303, 307, 308):
             sys.exit(f"Redirect to {e.headers.get('Location')} refused - give the exact AdGuard Home address instead")
@@ -82,7 +121,11 @@ def main():
     with open(args.output, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=2)
     entries = len(data.get("data", [])) if isinstance(data, dict) else 0
-    print(f"Wrote {entries} entries to {args.output}")
+    print(f"Wrote {entries} entries ({pages_fetched} page(s)) to {args.output}")
+    if maybe_more:
+        print("Warning: the last page fetched was full, so the log may hold older entries "
+              "that were not exported. Re-run with a higher --pages value to be sure.",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":
