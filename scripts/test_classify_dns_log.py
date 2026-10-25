@@ -8,7 +8,7 @@ import os
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import classify_dns_log as m
@@ -282,6 +282,129 @@ class TestFetchQueryLogHelpers(unittest.TestCase):
             with self.assertRaises(fql.urllib.error.HTTPError) as ctx:
                 fql.fetch_page(f"http://127.0.0.1:{srv.server_port}", "u", "p", 10)
             self.assertEqual(ctx.exception.code, 302)
+        finally:
+            srv.shutdown()
+
+
+class TestFetchPagination(unittest.TestCase):
+    TOTAL = 7
+
+    def start_server(self):
+        import http.server, threading
+        total = self.TOTAL
+
+        class PagedHandler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                qs = fql.urllib.parse.parse_qs(fql.urllib.parse.urlparse(self.path).query)
+                limit = int(qs["limit"][0])
+                offset = int(qs["offset"][0])
+                entries = [
+                    {"question": {"name": f"d{i}.example.com."}, "client": "192.168.1.50",
+                     "reason": "NotFilteredNotFound", "time": f"2026-10-25T09:0{i}:00Z"}
+                    for i in range(total)
+                ]
+                body = json.dumps({"oldest": "", "data": entries[offset:offset + limit]}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *a):
+                pass
+
+        srv = http.server.HTTPServer(("127.0.0.1", 0), PagedHandler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        return srv
+
+    def test_merges_and_stops_on_short_page(self):
+        srv = self.start_server()
+        try:
+            host = f"http://127.0.0.1:{srv.server_port}"
+            merged, pages, maybe_more = fql.fetch_all_pages(host, "u", "p", limit=3, pages=10)
+            self.assertEqual(pages, 3)  # 3 + 3 + short page of 1
+            self.assertEqual(len(merged["data"]), self.TOTAL)
+            self.assertFalse(maybe_more)  # ended on a short page: log is complete
+        finally:
+            srv.shutdown()
+
+    def test_respects_page_cap(self):
+        srv = self.start_server()
+        try:
+            host = f"http://127.0.0.1:{srv.server_port}"
+            merged, pages, maybe_more = fql.fetch_all_pages(host, "u", "p", limit=3, pages=2)
+            self.assertEqual(pages, 2)
+            self.assertEqual(len(merged["data"]), 6)
+            self.assertTrue(maybe_more)  # stopped on a full page: possibly incomplete
+        finally:
+            srv.shutdown()
+
+    def test_main_warns_when_last_page_full(self):
+        srv = self.start_server()
+        old_env = os.environ.get("ADGUARD_PASSWORD")
+        os.environ["ADGUARD_PASSWORD"] = "x"
+        argv0 = sys.argv
+        err = io.StringIO()
+        out_file = os.path.join(tempfile.mkdtemp(), "q.json")
+        try:
+            host = f"http://127.0.0.1:{srv.server_port}"
+            sys.argv = ["fetch_query_log.py", "--host", host, "--user", "u",
+                        "--pages", "1", "--limit", "3", "-o", out_file]
+            with redirect_stderr(err):
+                fql.main()
+            self.assertIn("may hold older entries", err.getvalue())
+            with open(out_file, encoding="utf-8") as fh:
+                self.assertEqual(len(json.load(fh)["data"]), 3)
+        finally:
+            sys.argv = argv0
+            if old_env is None:
+                del os.environ["ADGUARD_PASSWORD"]
+            else:
+                os.environ["ADGUARD_PASSWORD"] = old_env
+            srv.shutdown()
+
+    def test_main_no_warning_on_short_page(self):
+        srv = self.start_server()
+        old_env = os.environ.get("ADGUARD_PASSWORD")
+        os.environ["ADGUARD_PASSWORD"] = "x"
+        argv0 = sys.argv
+        err = io.StringIO()
+        out_file = os.path.join(tempfile.mkdtemp(), "q.json")
+        try:
+            host = f"http://127.0.0.1:{srv.server_port}"
+            sys.argv = ["fetch_query_log.py", "--host", host, "--user", "u",
+                        "--pages", "10", "--limit", "3", "-o", out_file]
+            with redirect_stderr(err):
+                fql.main()
+            self.assertNotIn("may hold older entries", err.getvalue())
+            with open(out_file, encoding="utf-8") as fh:
+                self.assertEqual(len(json.load(fh)["data"]), self.TOTAL)
+        finally:
+            sys.argv = argv0
+            if old_env is None:
+                del os.environ["ADGUARD_PASSWORD"]
+            else:
+                os.environ["ADGUARD_PASSWORD"] = old_env
+            srv.shutdown()
+
+    def test_rejects_unexpected_response_shape(self):
+        import http.server, threading
+
+        class BadHandler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = b'{"unexpected": true}'
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *a):
+                pass
+
+        srv = http.server.HTTPServer(("127.0.0.1", 0), BadHandler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            host = f"http://127.0.0.1:{srv.server_port}"
+            with self.assertRaises(ValueError):
+                fql.fetch_all_pages(host, "u", "p", limit=3, pages=1)
         finally:
             srv.shutdown()
 
