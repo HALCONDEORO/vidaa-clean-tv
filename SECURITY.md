@@ -1,0 +1,24 @@
+# Security
+
+This project is documentation plus small offline scripts, so the realistic
+risks are credential leaks (your AdGuard Home password) and blocklist changes
+that break apps on your TV.
+
+## Reporting a problem
+
+If you find a security issue in the scripts - for example a way credentials
+could leak, or a redirect being followed - open a GitHub issue with
+"[security]" in the title, or reach the maintainer through the repository
+owner's GitHub profile. Never include passwords, tokens or your own query
+logs in a report.
+
+## What the scripts do with your data
+
+- `fetch_query_log.py` talks only to the AdGuard Home address you give it,
+  refuses HTTP redirects (so credentials cannot be forwarded elsewhere), and
+  writes the export to a local file. Run it only against your own server.
+- `classify_dns_log.py` and `validate_blocklist.py` read local files and make
+  no network requests at all.
+- The exported `querylog.json` is a record of what your TV looked up: treat
+  it as private browsing data, keep it local, and never commit it (it is
+  covered by `.gitignore`).
