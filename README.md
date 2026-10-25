@@ -28,7 +28,7 @@ VIDAA sets have no debug bridge, so the cleanup happens where the system does al
 
 | You have | Do this |
 |---|---|
-| **Just the remote** | [docs/01-on-device-settings.md](docs/01-on-device-settings.md) - about five minutes, zero risk. |
+| **Just the remote** | [docs/01-on-device-settings.md](docs/01-on-device-settings.md) - about five minutes; local settings you can change back. |
 | **An always-on computer or Raspberry Pi** | Add [docs/02-dns-filtering.md](docs/02-dns-filtering.md) and [docs/03-observing-dns.md](docs/03-observing-dns.md). |
 | **A VIDAA TV you are cleaning for the first time** | Follow [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) and log what you see. |
 
@@ -37,7 +37,7 @@ VIDAA sets have no debug bridge, so the cleanup happens where the system does al
 | Part | What it looks like |
 |---|---|
 | **Content recognition off** | The TV stops reporting what you watch - over apps, HDMI and broadcast alike. |
-| **Ads without a profile of you** | Ads can still appear; they stop being chosen from your viewing history. |
+| **Ads without a profile of you** | Ads can still appear. The documented personalization toggle can be disabled; its effect has not been verified on the target TV. |
 | **A cleaner home screen (DNS route)** | The upstream blocklist author reports recommendation rows, promo tiles and VIDAA Free promos gone, with YouTube and Netflix intact. |
 | **A test log, not promises** | [TESTING.md](TESTING.md) records exactly what was verified, on which model and when. Nothing else is claimed. |
 
