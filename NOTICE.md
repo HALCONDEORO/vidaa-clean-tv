@@ -10,6 +10,9 @@ This project is original work, built on public research by others:
 - **justatv.eu** - documentation source for VIDAA settings paths and for the
   conclusion that, with no ADB on VIDAA, cleanup means settings and network
   filtering. https://justatv.eu/en/guides/cleaning-up-a-hisense-television-with-vidaa
+- **velmo.one ACR guide** - documentation source for the ACR opt-out menu
+  paths in the device Settings menu.
+  https://velmo.one/guides/turn-off-acr-hisense-tv/
 - **ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist** (Apache License 2.0) -
   the upstream DNS blocklist this project subscribes to. The list is
   referenced by URL, not vendored. If we ever vendor a copy, the Apache-2.0
