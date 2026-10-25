@@ -20,7 +20,8 @@ import re
 import sys
 
 ADGUARD_RULE_RE = re.compile(r"^\|\|([A-Za-z0-9*_.-]+)\^$")
-HOSTNAME_RE = re.compile(r"^(?=.{1,253}$)([A-Za-z0-9_]{1,63}\.)+[A-Za-z]{2,63}$")
+HOSTNAME_RE = re.compile(
+    r"^(?=.{1,253}$)([A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\.)+[A-Za-z]{2,63}$")
 
 
 def load_rules(path):
@@ -29,7 +30,7 @@ def load_rules(path):
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         for lineno, line in enumerate(fh, 1):
             line = line.strip()
-            if not line or line.startswith(("!", "#", "[")):
+            if not line or line.startswith(("!", "#", "[", "//")):
                 continue
             m = ADGUARD_RULE_RE.match(line)
             if m:
