@@ -15,6 +15,8 @@ date, firmware version, step, expected result, observed result, reverted
 | Upstream blocklist cleans the home screen, YouTube/Netflix keep working | ipanalytics (Hisense, Germany) | Not tested on Toshiba |
 | MQTT local control works on Toshiba VIDAA | warrenrees/ha_vidaatv README | Not tested on this model |
 
+The step-by-step protocol for the first session is [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md).
+
 ## Session log
 
 | Date | Firmware | Step | Expected | Observed | Reverted |
