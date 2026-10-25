@@ -38,3 +38,16 @@ python3 scripts/classify_dns_log.py querylog.json \
     --blocklist Blocked_Domains.txt \
     --min-count 3 --rules
 ```
+
+To see *when* the TV is most active, add `--timeline` (bucket size in minutes,
+default 60). It prints per-bucket counts split into filtered and unblocked:
+
+```sh
+python3 scripts/classify_dns_log.py querylog.json --client 192.168.1.50 --timeline
+```
+
+Timestamps exist only in AdGuard Home JSON exports; dnsmasq logs and plain
+domain lists cannot produce a timeline. A timeline shows request volume over
+time - for example whether queries spike right after you unblock a domain.
+Volume says nothing about what data was sent, so use it to decide when to
+look closer, not to draw conclusions about content.
