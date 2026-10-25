@@ -1,0 +1,18 @@
+name: Documentation fix
+description: Report a wrong menu path, broken link or unclear step
+title: "[docs]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: Page, section and what is inaccurate, broken or unclear.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: What you saw instead - exact menu wording, a link, a photo description. Claims need a source or a logged session, same as everywhere else in this repo.
+    validations:
+      required: true
