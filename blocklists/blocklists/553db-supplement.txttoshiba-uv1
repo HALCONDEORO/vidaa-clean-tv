@@ -1,0 +1,10 @@
+! Title: VIDAA Clean TV supplement - Toshiba 50UV1553DB (Europe)
+! License: MIT
+! Status: EMPTY ON PURPOSE.
+! No rule is added here without (a) a real DNS observation on the device and
+! (b) a functional check that blocking it breaks nothing needed.
+! See TESTING.md for the observation log.
+! Format: AdGuard. Subscribe alongside the upstream Hisense VIDAA list:
+! https://raw.githubusercontent.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist/main/Blocked_Domains_AdGuard.txt
+!
+! --- observed candidates below (commented until verified) ---
