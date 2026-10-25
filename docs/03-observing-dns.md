@@ -22,7 +22,7 @@ then classify it.
    - The exported `querylog.json` is a record of what your TV looked up:
      treat it as private browsing data. Keep it local and never commit it
      (it is covered by `.gitignore` along with `.env`).
-One page holds 500 entries by default; a day or two of TV traffic is often more. `--pages N` keeps fetching older pages until the log runs out (max 100 pages). If the export stops on a full page, the script warns that older entries may remain; raise N until the warning disappears.
+   One page holds 500 entries by default; a day or two of TV traffic is often more. `--pages N` keeps fetching older pages until the log runs out (max 100 pages). If the export stops on a full page, the script warns that older entries may remain; raise N until the warning disappears.
 
 4. Run `scripts/classify_dns_log.py` on the export. It aggregates domains,
    marks which are already covered by the upstream blocklist, and prints
