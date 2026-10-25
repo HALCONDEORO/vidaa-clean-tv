@@ -3,6 +3,10 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-25 - Paginated query-log export
+
+- fetch_query_log.py --pages N: keeps fetching older query-log pages until a short page (previously one page only, so long observation windows were silently truncated). Single-page default unchanged. When the export stops on a full page, it warns that older entries may remain (a full page means possible truncation, not certain truncation).
+
 ## 2026-10-25 - Timeline and model index
 
 - classify_dns_log.py --timeline: per-bucket (default 60 minutes) filtered/unblocked counts from AdGuard exports; dnsmasq and plain inputs are rejected with a clear message.
