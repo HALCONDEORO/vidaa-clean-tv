@@ -151,6 +151,11 @@ class TestBlocklist(TempFileMixin, unittest.TestCase):
         path = self.write_tmp(BLOCKLIST)
         self.assertEqual(m.load_blocklist(path), {"ads.vidaa.com", "blocked.example.net"})
 
+    def test_load_skips_slash_comments(self):
+        # The upstream annotated edition comments with '//', not '!'.
+        path = self.write_tmp("//Title: annotated edition\n//Purpose: cleanup\nplain.example.net\n")
+        self.assertEqual(m.load_blocklist(path), {"plain.example.net"})
+
     def test_exact_and_subdomain_match(self):
         blocked = {"blocked.example.net"}
         self.assertTrue(m.is_blocked("blocked.example.net", blocked))
@@ -220,6 +225,15 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
 
     def test_valid_file_passes(self):
         path = self.write_tmp("! comment\n||ads.example.com^\nplain.example.net\n")
+        self.run_validator([path])  # no SystemExit
+
+    def test_slash_comments_accepted(self):
+        path = self.write_tmp("// annotated edition header\n||ads.example.com^\nplain.example.net\n")
+        self.run_validator([path])  # no SystemExit
+
+    def test_hyphenated_hostnames_accepted(self):
+        # Common in the wild: ad-cmp.hismarttv.com and similar.
+        path = self.write_tmp("ad-cmp.hismarttv.com\n||api-recommendation-eu.hismarttv.com^\n")
         self.run_validator([path])  # no SystemExit
 
     def test_duplicate_detected(self):
@@ -405,6 +419,60 @@ class TestFetchPagination(unittest.TestCase):
             host = f"http://127.0.0.1:{srv.server_port}"
             with self.assertRaises(ValueError):
                 fql.fetch_all_pages(host, "u", "p", limit=3, pages=1)
+        finally:
+            srv.shutdown()
+
+
+class TestEndToEndPipeline(TempFileMixin, unittest.TestCase):
+    """The exact flow docs/03 describes: fetch pages, then classify.
+
+    Uses a local paged HTTP server - no real network access.
+    """
+
+    def test_fetch_then_classify(self):
+        import http.server, threading
+
+        entries = [
+            {"question": {"name": "ads.vidaa.com."}, "client": "192.168.1.50",
+             "reason": "FilteredBlackList", "time": "2026-10-25T09:05:00Z"},
+            {"question": {"name": "new-candidate.example.net."}, "client": "192.168.1.50",
+             "reason": "NotFilteredNotFound", "time": "2026-10-25T09:06:00Z"},
+            {"question": {"name": "www.youtube.com."}, "client": "192.168.1.50",
+             "reason": "NotFilteredNotFound", "time": "2026-10-25T09:07:00Z"},
+        ]
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                qs = fql.urllib.parse.parse_qs(fql.urllib.parse.urlparse(self.path).query)
+                limit = int(qs["limit"][0])
+                offset = int(qs["offset"][0])
+                body = json.dumps({"oldest": "", "data": entries[offset:offset + limit]}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *a):
+                pass
+
+        srv = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            host = f"http://127.0.0.1:{srv.server_port}"
+            merged, pages, maybe_more = fql.fetch_all_pages(host, "u", "p", limit=2, pages=5)
+            self.assertEqual((pages, maybe_more), (2, False))  # full page + short page of 1
+            log_path = self.write_tmp(json.dumps(merged))
+
+            # Blocklist mixes AdGuard rules, plain hosts and //-comments,
+            # like the current upstream annotated edition.
+            bl_path = self.write_tmp(
+                "// annotated edition\n||ads.vidaa.com^\nwww.youtube.com\n")
+            blocked = m.load_blocklist(bl_path)
+            self.assertEqual(blocked, {"ads.vidaa.com", "www.youtube.com"})
+
+            rows = [r for r in m.iter_queries(log_path) if r[1] == "192.168.1.50"]
+            candidates = sorted({r[0] for r in rows if not m.is_blocked(r[0], blocked)})
+            self.assertEqual(candidates, ["new-candidate.example.net"])
         finally:
             srv.shutdown()
 

@@ -88,12 +88,16 @@ def iter_queries(path):
 
 
 def load_blocklist(path):
-    """Load plain hostnames or AdGuard-format rules into a set of domains."""
+    """Load plain hostnames or AdGuard-format rules into a set of domains.
+
+    Comment styles skipped: AdGuard '!', '#', '[' headers and '//' (the
+    annotated format the upstream list currently uses).
+    """
     domains = set()
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         for line in fh:
             line = line.strip()
-            if not line or line.startswith(("!", "#", "[")):
+            if not line or line.startswith(("!", "#", "[", "//")):
                 continue
             m = ADGUARD_RULE_RE.match(line)
             domains.add(norm(m.group(1) if m else line))
