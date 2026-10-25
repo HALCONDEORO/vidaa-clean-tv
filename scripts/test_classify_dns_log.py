@@ -139,5 +139,88 @@ class TestCli(TempFileMixin, unittest.TestCase):
         self.assertIn("No DNS queries found", str(ctx.exception))
 
 
+
+
+import validate_blocklist as vb
+import fetch_query_log as fql
+
+
+class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
+    def run_validator(self, argv):
+        argv0 = sys.argv
+        sys.argv = ["validate_blocklist.py"] + argv
+        try:
+            vb.main()
+        finally:
+            sys.argv = argv0
+
+    def test_valid_file_passes(self):
+        path = self.write_tmp("! comment\n||ads.example.com^\nplain.example.net\n")
+        self.run_validator([path])  # no SystemExit
+
+    def test_duplicate_detected(self):
+        path = self.write_tmp("||ads.example.com^\n||ads.example.com^\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([path])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_bad_syntax_detected(self):
+        path = self.write_tmp("||unclosed\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([path])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_upstream_overlap_detected(self):
+        mine = self.write_tmp("||ads.example.com^\n")
+        upstream = self.write_tmp("||ads.example.com^\n||other.example.com^\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([mine, "--upstream", upstream])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_real_supplement_is_valid(self):
+        import os
+        supplement = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "..", "blocklists", "toshiba-uv1553db-supplement.txt")
+        rules, errors = vb.load_rules(supplement)
+        self.assertEqual(errors, [])
+
+
+class TestFetchQueryLogHelpers(unittest.TestCase):
+    def test_build_url(self):
+        url = fql.build_querylog_url("http://192.168.1.10:3000/", 500)
+        self.assertEqual(url, "http://192.168.1.10:3000/control/querylog?limit=500&offset=0")
+
+    def test_basic_auth_header(self):
+        # base64 of "admin:secret"
+        self.assertEqual(fql.basic_auth_header("admin", "secret"), "Basic YWRtaW46c2VjcmV0")
+
+    def test_redirect_handler_refuses_redirects(self):
+        handler = fql._NoRedirect()
+        self.assertIsNone(handler.redirect_request(None, None, 302, "Found", {}, "http://evil.example/"))
+
+    def test_fetch_page_rejects_non_http_scheme(self):
+        with self.assertRaises(ValueError):
+            fql.fetch_page("file:///etc/passwd", "u", "p", 10)
+
+    def test_fetch_page_refuses_redirect(self):
+        # A redirect response must surface as HTTPError, never as followed content.
+        import http.server, threading
+        class Redirector(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(302)
+                self.send_header("Location", "http://127.0.0.1:1/")
+                self.end_headers()
+            def log_message(self, *a):
+                pass
+        srv = http.server.HTTPServer(("127.0.0.1", 0), Redirector)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            with self.assertRaises(fql.urllib.error.HTTPError) as ctx:
+                fql.fetch_page(f"http://127.0.0.1:{srv.server_port}", "u", "p", 10)
+            self.assertEqual(ctx.exception.code, 302)
+        finally:
+            srv.shutdown()
+
+
 if __name__ == "__main__":
     unittest.main()
