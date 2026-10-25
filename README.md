@@ -88,7 +88,7 @@ Reports from other VIDAA models are the most useful contribution right now - see
 
 ## Hardware verification status
 
-Nothing here is claimed as tested on a specific model until it appears in [TESTING.md](TESTING.md) with a date and a firmware version. The current target device is a Toshiba 50UV1553DB (VIDAA, Europe). Until that first session is logged, treat every menu name as "wording varies - read the privacy section".
+Nothing here is claimed as tested on a specific model until it appears in [TESTING.md](TESTING.md) with a date and a firmware version. The current target device is a Toshiba 50UV1553DB (VIDAA, Europe). Per-model pages live in [docs/tv/](docs/tv/). Until that first session is logged, treat every menu name as "wording varies - read the privacy section".
 
 ## License
 

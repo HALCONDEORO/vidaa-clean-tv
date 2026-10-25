@@ -82,6 +82,70 @@ class TestInputs(TempFileMixin, unittest.TestCase):
         self.assertEqual([r[0] for r in rows], ["plain.example.org", "www.youtube.com"])
 
 
+TIMED_LOG = {
+    "data": [
+        {"question": {"name": "ads.vidaa.com."}, "client": "192.168.1.50",
+         "reason": "FilteredBlackList", "time": "2026-10-25T09:05:00Z"},
+        {"question": {"name": "ads.vidaa.com."}, "client": "192.168.1.50",
+         "reason": "FilteredBlackList", "time": "2026-10-25T09:40:00+00:00"},
+        {"question": {"name": "www.youtube.com."}, "client": "192.168.1.50",
+         "reason": "NotFilteredNotFound", "time": "2026-10-25T10:15:00Z"},
+        {"question": {"name": "telemetry.example.net."}, "client": "192.168.1.99",
+         "reason": "NotFilteredNotFound", "time": "2026-10-25T09:50:00Z"},
+        {"question": {"name": "untimed.example.com."}, "client": "192.168.1.50",
+         "reason": "NotFilteredNotFound"},
+        {"question": {"name": "badtime.example.com."}, "client": "192.168.1.50",
+         "reason": "NotFilteredNotFound", "time": "not-a-date"},
+    ]
+}
+
+
+class TestTimeline(TempFileMixin, unittest.TestCase):
+    def run_cli(self, argv):
+        buf = io.StringIO()
+        argv0 = sys.argv
+        sys.argv = ["classify_dns_log.py"] + argv
+        try:
+            with redirect_stdout(buf):
+                m.main()
+        finally:
+            sys.argv = argv0
+        return buf.getvalue()
+
+    def test_parse_timestamp(self):
+        self.assertIsNotNone(m.parse_timestamp("2026-10-25T09:05:00Z"))
+        self.assertIsNotNone(m.parse_timestamp("2026-10-25T09:05:00+02:00"))
+        self.assertIsNotNone(m.parse_timestamp("2026-10-25 09:05:00"))
+        self.assertIsNone(m.parse_timestamp("not-a-date"))
+        self.assertIsNone(m.parse_timestamp(None))
+        self.assertIsNone(m.parse_timestamp(""))
+
+    def test_timeline_buckets(self):
+        log = self.write_tmp(json.dumps(TIMED_LOG))
+        out = self.run_cli([log, "--client", "192.168.1.50", "--timeline", "60"])
+        self.assertIn("2026-10-25T09:00Z\t2\t2\t0", out)
+        self.assertIn("2026-10-25T10:00Z\t1\t0\t1", out)
+        self.assertNotIn("telemetry.example.net", out)  # other client excluded
+        self.assertIn("Entries without a timestamp (excluded): 2", out)
+
+    def test_timeline_without_client(self):
+        log = self.write_tmp(json.dumps(TIMED_LOG))
+        out = self.run_cli([log, "--timeline"])
+        self.assertIn("2026-10-25T09:00Z\t3\t2\t1", out)  # default 60 minutes
+
+    def test_timeline_rejects_untimed_input(self):
+        log = self.write_tmp("plain.example.org\nwww.youtube.com\n")
+        with self.assertRaises(SystemExit):
+            self.run_cli([log, "--timeline"])
+
+    def test_timed_generator_keeps_legacy_shape(self):
+        path = self.write_tmp(json.dumps(ADGUARD_LOG))
+        self.assertEqual(list(m.iter_queries(path))[0], ("ads.vidaa.com", "192.168.1.50", False))
+        timed = list(m.iter_queries_timed(path))[0]
+        self.assertEqual(timed[:3], ("ads.vidaa.com", "192.168.1.50", False))
+        self.assertIsNone(timed[3])
+
+
 class TestBlocklist(TempFileMixin, unittest.TestCase):
     def test_load_adguard_and_plain(self):
         path = self.write_tmp(BLOCKLIST)

@@ -3,6 +3,13 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-25 - Timeline and model index
+
+- classify_dns_log.py --timeline: per-bucket (default 60 minutes) filtered/unblocked counts from AdGuard exports; dnsmasq and plain inputs are rejected with a clear message.
+- docs/tv/README.md: index of model pages with verification status.
+- SECURITY.md: how to report script security issues; data-hygiene expectations.
+- docs/03: --timeline usage and what request volume does and does not show.
+
 ## 2026-10-25 - Contributor readiness
 
 - CONTRIBUTING.md: verification rule, new-model reporting, script and docs conventions.

@@ -16,6 +16,7 @@ Examples:
 
 import argparse
 import json
+from datetime import datetime, timezone
 import re
 import sys
 from collections import Counter
@@ -29,8 +30,25 @@ def norm(domain):
     return domain.strip().lower().rstrip(".")
 
 
-def iter_queries(path):
-    """Yield (domain, client, filtered) tuples from any supported input format."""
+def parse_timestamp(value):
+    """Parse an AdGuard 'time' field to an aware datetime; None if unusable."""
+    if not value:
+        return None
+    try:
+        ts = datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts
+
+
+def iter_queries_timed(path):
+    """Yield (domain, client, filtered, timestamp_or_None) from any supported input.
+
+    Only AdGuard Home JSON exports carry timestamps; dnsmasq and plain lists
+    yield None in the last field.
+    """
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         text = fh.read()
     try:
@@ -51,16 +69,22 @@ def iter_queries(path):
             client_info = entry.get("client_info") or {}
             client = entry.get("client") or client_info.get("name") or ""
             reason = str(entry.get("reason") or "")
-            yield name, str(client), reason.startswith("Filtered")
+            yield name, str(client), reason.startswith("Filtered"), parse_timestamp(entry.get("time"))
         return
     for line in text.splitlines():
         m = DNSMASQ_RE.search(line)
         if m:
-            yield norm(m.group(1)), m.group(2), False
+            yield norm(m.group(1)), m.group(2), False, None
             continue
         candidate = norm(line)
         if DOMAIN_RE.match(candidate):
-            yield candidate, "", False
+            yield candidate, "", False, None
+
+
+def iter_queries(path):
+    """Yield (domain, client, filtered) tuples from any supported input format."""
+    for domain, client, filtered, _ts in iter_queries_timed(path):
+        yield domain, client, filtered
 
 
 def load_blocklist(path):
@@ -92,7 +116,37 @@ def main():
     ap.add_argument("--blocklist", help="Plain-hostname or AdGuard-format list to compare against")
     ap.add_argument("--min-count", type=int, default=1, help="Minimum query count to report (default: 1)")
     ap.add_argument("--rules", action="store_true", help="Print AdGuard candidate rules for unblocked domains")
+    ap.add_argument("--timeline", nargs="?", const=60, type=int, metavar="MINUTES",
+                    help="Per-bucket query counts over time (default 60). Needs timestamps: AdGuard JSON exports only")
     args = ap.parse_args()
+
+    if args.timeline is not None:
+        if args.timeline < 1:
+            sys.exit("--timeline minutes must be >= 1")
+        buckets = Counter()
+        bucket_filtered = Counter()
+        untimed = 0
+        for domain, client, filtered, ts in iter_queries_timed(args.logfile):
+            if args.client and client != args.client:
+                continue
+            if ts is None:
+                untimed += 1
+                continue
+            epoch = int(ts.timestamp())
+            buckets[epoch - (epoch % (args.timeline * 60))] += 1
+            if filtered:
+                bucket_filtered[epoch - (epoch % (args.timeline * 60))] += 1
+        if not buckets:
+            sys.exit("No timestamped queries found. --timeline needs an AdGuard Home JSON export.")
+        print(f"Timeline: {args.timeline}-minute buckets (times in UTC)")
+        print("bucket_start\ttotal\tfiltered\tunblocked")
+        for bucket in sorted(buckets):
+            stamp = datetime.fromtimestamp(bucket, tz=timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+            filt = bucket_filtered.get(bucket, 0)
+            print(f"{stamp}\t{buckets[bucket]}\t{filt}\t{buckets[bucket] - filt}")
+        if untimed:
+            print(f"Entries without a timestamp (excluded): {untimed}")
+        return
 
     counts = Counter()
     filtered_seen = set()
