@@ -7,8 +7,9 @@ minutes.
 
 ## Before
 
-- Note the firmware version: Settings → System → About (or Support). Write it
-  in the session log.
+- Note the firmware version: **Settings → Support → About**, or
+  **Settings → Support → System Info → Version** on older sets (paths from
+  the official VIDAA manuals). Write it in the session log.
 - Note exactly which privacy-related options exist and their exact wording.
   Menu names vary; the log needs the real ones, not the ones in docs/01.
 

@@ -73,7 +73,7 @@ Per-model pages live under [docs/tv/](docs/tv/): [Toshiba 50UV1553DB](docs/tv/to
 
 ## Existing work this builds on
 
-- [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT) - ADB-based cleanup for Android TV / Google TV. Not compatible with VIDAA. Inspiration for the goal; none of the code.
+- [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT) - ADB-based cleanup for Android TV / Google TV. Not compatible with VIDAA. Inspiration for the goal; none of the code. Since v3.1.0 it ships a [non-Android cleanup guide](https://cleanyour.tv/not-android) whose VIDAA steps come from the official VIDAA U5/U6/U9 manuals, and its [showcase](https://github.com/Gathin23/cleanyourtv/blob/main/SHOWCASE.md) lists this project as the VIDAA route.
 - [ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist](https://github.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist) (Apache-2.0) - the blocklist this project subscribes to: 137 active rules observed on real Hisense VIDAA sets in Europe. We do not copy the list; we point at it and keep a small supplement for domains observed on other VIDAA brands.
 - [warrenrees/ha_vidaatv](https://github.com/warrenrees/ha_vidaatv) (MIT) - Home Assistant integration that talks to VIDAA TVs over MQTT with on-screen PIN pairing, and lists some Toshiba VIDAA sets as supported. See [docs/04-local-control-mqtt.md](docs/04-local-control-mqtt.md).
 - [justatv.eu VIDAA cleanup guide](https://justatv.eu/en/guides/cleaning-up-a-hisense-television-with-vidaa) and the [official VIDAA OS privacy policy](https://www.vidaa.com/os-privacy-policy/) - sources for the settings paths in docs/01.
