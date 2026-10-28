@@ -13,6 +13,10 @@ This project is original work, built on public research by others:
 - **velmo.one ACR guide** - documentation source for the ACR opt-out menu
   paths in the device Settings menu.
   https://velmo.one/guides/turn-off-acr-hisense-tv/
+- **Clean Your TV non-Android guide (cleanyour.tv/not-android)** -
+  documentation source for the VIDAA menu paths in docs/01 and docs/05,
+  compiled there from the official Hisense VIDAA U5/U6/U9 manuals.
+  https://cleanyour.tv/not-android
 - **ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist** (Apache License 2.0) -
   the upstream DNS blocklist this project subscribes to. The list is
   referenced by URL, not vendored. If we ever vendor a copy, the Apache-2.0

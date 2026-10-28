@@ -3,6 +3,21 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-28 - Manual-sourced VIDAA menu paths
+
+- docs/01: Enhanced Viewing / ACR, personalised ads and advertising-ID reset
+  paths, the consent menu (Support → Disclaimer and Privacy, incl. "Remove
+  User Data") and an optional hands-free voice step, all from the official
+  VIDAA U5/U6/U9 manuals as compiled by the Clean Your TV non-Android guide
+  (cleanyour.tv/not-android, last checked 26 Oct 2026). The Privacy-section
+  path from the earlier guides is kept as an alternative. All still
+  sourced-but-unverified on the target TV.
+- docs/05: firmware version path corrected to the manual path
+  (Settings → Support → About / System Info → Version).
+- README/NOTICE/docs/tv/hisense.md: Clean Your TV v3.1.0's non-Android guide
+  credited and linked; its showcase now lists this project as the VIDAA
+  route.
+
 ## 2026-10-25 - Claim alignment in docs/01
 
 - docs/01-on-device-settings.md: removed absolutes ("Risk: none", "stops reporting what you watch", "breaks nothing") that survived the earlier editorial pass; effects on the target TV are now labeled documented-but-unverified, matching CONTRIBUTING.md and the README/TROUBLESHOOTING wording.

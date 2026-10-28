@@ -10,6 +10,11 @@ ourselves.
 | Settings paths in [../01-on-device-settings.md](../01-on-device-settings.md) | Written from Hisense-family guides; verify the wording on your model |
 | This project's own hardware tests | None |
 
+The [Clean Your TV non-Android guide](https://cleanyour.tv/not-android)
+covers the VIDAA settings route step by step, sourced to the official VIDAA
+U5/U6/U9 manuals; it is the best-maintained external reference for the menu
+paths right now.
+
 Newer Hisense generations may call the system **HomeOS U9 / U9.5** instead of
 VIDAA. Per the justatv.eu guide it is the same system under a new name, with
 the settings in the same places.
