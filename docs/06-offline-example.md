@@ -5,6 +5,20 @@ blocklist. The example addresses and domains do not identify any actual TV
 or service. Run commands from the repository root with Python 3.10 or later.
 No dependencies, credentials, TV, router or network requests are needed.
 
+## Find the synthetic client identifiers
+
+```sh
+python3 scripts/classify_dns_log.py examples/synthetic-dns.json --clients
+```
+
+```text
+client	queries	filtered
+"192.0.2.50"	3	2
+"192.0.2.99"	1	0
+```
+
+These identifiers come from the invented input, not device discovery.
+
 ## Count queries from one synthetic client
 
 ```sh

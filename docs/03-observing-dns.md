@@ -64,3 +64,24 @@ misreported as coverage. Use a separate supported-syntax list for comparison;
 do not strip conditions or exceptions from a real filter to make it pass.
 The standalone validator supports some wildcard syntax that the classifier
 does not evaluate. Passing validation does not guarantee classifier support.
+
+### Find the client identifier first
+
+Not sure which identifier to use with `--client`? List the clients present in
+an export without making a network request:
+
+```sh
+python3 scripts/classify_dns_log.py querylog.json --clients
+```
+
+The table shows each identifier, query count and count marked filtered in the
+log. Identifiers are JSON-quoted so unusual characters cannot break the table;
+for normal IP addresses, copy the address inside the quotes to `--client`
+(not the quotes themselves). A label with escaped control characters is not
+a normal IP address; inspect your export before using it as a filter.
+`<unknown>` means the input had no client identifier; plain domain files cannot
+identify a TV. Check the TV's network settings or your router to choose the
+right client. This command cannot prove which physical device owns an address.
+Counts include only supported, valid query records, not malformed entries.
+Keep the inventory private just like the log. `--clients` is a separate mode,
+not combined with client filters, blocklist comparisons, rules or timelines.

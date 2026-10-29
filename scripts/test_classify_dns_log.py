@@ -387,6 +387,43 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+class TestClientInventory(TempFileMixin, unittest.TestCase):
+    def run_cli(self, arguments):
+        from unittest.mock import patch
+        output = io.StringIO()
+        with patch.object(sys, "argv", ["classify_dns_log.py"] + arguments), redirect_stdout(output):
+            m.main()
+        return output.getvalue()
+
+    def test_counts_and_order_are_deterministic(self):
+        log = self.write_tmp(json.dumps(ADGUARD_LOG))
+        self.assertEqual(self.run_cli([log, "--clients"]),
+                         'client\tqueries\tfiltered\n"192.168.1.50"\t4\t1\n'
+                         '<unknown>\t1\t0\n"192.168.1.99"\t1\t0\n')
+
+    def test_unknown_plain_input_and_control_characters(self):
+        plain = self.write_tmp("synthetic.example.com\n")
+        self.assertEqual(self.run_cli([plain, "--clients"]),
+                         "client\tqueries\tfiltered\n<unknown>\t1\t0\n")
+        log = self.write_tmp(json.dumps({"data": [{
+            "question": {"name": "synthetic.example.com"}, "client": "x\ty\nz"}]}))
+        output = self.run_cli([log, "--clients"])
+        self.assertEqual(len(output.splitlines()), 2)
+        self.assertIn('"x\\ty\\nz"\t1\t0', output)
+
+    def test_rejects_conflicting_modes_and_empty_input(self):
+        log = self.write_tmp("synthetic.example.com\n")
+        for option in [["--client", "192.0.2.50"], ["--blocklist", "unused"],
+                       ["--timeline"], ["--rules"]]:
+            with self.subTest(option=option), redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as ctx:
+                    self.run_cli([log, "--clients"] + option)
+                self.assertEqual(ctx.exception.code, 2)
+        empty = self.write_tmp("! no queries\n")
+        with self.assertRaises(SystemExit):
+            self.run_cli([empty, "--clients"])
+
+
 class TestLocalInputFailures(unittest.TestCase):
     def test_classifier_missing_log_in_both_modes(self):
         from unittest.mock import patch
