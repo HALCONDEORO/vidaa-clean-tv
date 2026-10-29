@@ -16,7 +16,8 @@ main" is the unit of change.
   supported domain syntax before aggregation or candidate-rule output.
 - Validate single-page exports with the same schema checks as pagination;
   reject nonpositive page sizes before requesting credentials or network data.
-- Add five offline regression tests. No TV settings, blocklist rules, DNS
+- Reject multiple trailing DNS root dots before normalization.
+- Add six offline regression tests. No TV settings, blocklist rules, DNS
   configuration or filtering thresholds change.
 
 ## 2026-10-28 - Manual-sourced VIDAA menu paths

@@ -65,9 +65,11 @@ def iter_queries_timed(path):
             raw_name = question.get("name")
             if not isinstance(raw_name, str):
                 continue
-            name = norm(raw_name)
-            if not DOMAIN_RE.fullmatch(name):
+            # Validate before norm strips the optional DNS root dot.
+            # Multiple trailing dots must not become a different valid name.
+            if not DOMAIN_RE.fullmatch(raw_name.strip()):
                 continue
+            name = norm(raw_name)
             client_info = entry.get("client_info")
             if not isinstance(client_info, dict):
                 client_info = {}
@@ -80,13 +82,13 @@ def iter_queries_timed(path):
     for line in text.splitlines():
         m = DNSMASQ_RE.search(line)
         if m:
-            name = norm(m.group(1))
-            if DOMAIN_RE.fullmatch(name):
-                yield name, m.group(2), False, None
+            raw_name = m.group(1)
+            if DOMAIN_RE.fullmatch(raw_name):
+                yield norm(raw_name), m.group(2), False, None
             continue
-        candidate = norm(line)
-        if DOMAIN_RE.match(candidate):
-            yield candidate, "", False, None
+        candidate = line.strip()
+        if DOMAIN_RE.fullmatch(candidate):
+            yield norm(candidate), "", False, None
 
 
 def iter_queries(path):

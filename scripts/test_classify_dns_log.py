@@ -104,6 +104,23 @@ class TestMalformedInputs(TempFileMixin, unittest.TestCase):
             m.main()
         self.assertEqual(output.getvalue(), "||api-eu.example.com^\n")
 
+    def test_multiple_trailing_dots_are_rejected_before_normalization(self):
+        from unittest.mock import patch
+        bad = ["bad.example.com..", "bad.example.com...", "..", "..."]
+        inputs = [json.dumps({"data": [{"question": {"name": name}}
+                                       for name in bad + ["good.example.com."]]}),
+                  "\n".join(bad + ["good.example.com."]),
+                  "\n".join("query[A] " + name + " from 192.0.2.50"
+                            for name in bad + ["good.example.com."])]
+        for text in inputs:
+            with self.subTest(text=text):
+                path = self.write_tmp(text)
+                self.assertEqual([row[0] for row in m.iter_queries(path)], ["good.example.com"])
+                output = io.StringIO()
+                with patch.object(sys, "argv", ["classify_dns_log.py", path, "--rules"]), redirect_stdout(output):
+                    m.main()
+                self.assertEqual(output.getvalue(), "||good.example.com^\n")
+
     def test_dnsmasq_and_plain_reject_label_edge_hyphens(self):
         path = self.write_tmp("query[A] -bad.example.com from 192.0.2.50\n"
                               "bad-.example.com\nvalid-host.example.com\n")
