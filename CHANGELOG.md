@@ -3,6 +3,14 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Friendly local-input errors
+
+- Report unreadable/missing query logs and comparison/validation lists with
+  short path/permissions guidance, instead of tracebacks.
+- Three offline regressions cover missing logs in both modes, unreadable
+  comparisons and missing primary/upstream validator files.
+- Inputs remain read-only. No files are created or repaired automatically.
+
 ## 2026-10-29 - Handle truncated HTTP exports
 
 - Report incomplete or malformed HTTP responses without an unhandled

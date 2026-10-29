@@ -134,6 +134,13 @@ def is_blocked(domain, blocked):
 
 
 def main():
+    try:
+        run_cli()
+    except OSError:
+        sys.exit("Cannot read a local input file. Check its path and permissions.")
+
+
+def run_cli():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("logfile", help="Query log: AdGuard Home JSON, dnsmasq log, or plain domain list")
     ap.add_argument("--client", help="Only count queries from this client IP (e.g. the TV)")
