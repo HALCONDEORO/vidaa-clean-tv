@@ -33,9 +33,10 @@ def load_rules(path):
             if not line or line.startswith(("!", "#", "[", "//")):
                 continue
             m = ADGUARD_RULE_RE.match(line)
-            if m:
+            # Check label structure without dropping supported wildcard patterns.
+            if m and HOSTNAME_RE.fullmatch(m.group(1).replace("*", "a")):
                 rules.append((lineno, line, m.group(1).lower()))
-            elif HOSTNAME_RE.match(line):
+            elif HOSTNAME_RE.fullmatch(line):
                 rules.append((lineno, line, line.lower()))
             else:
                 errors.append(f"line {lineno}: not a valid rule or hostname: {line!r}")

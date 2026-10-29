@@ -3,6 +3,14 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Check hostnames inside block rules
+
+- Apply hostname label and length checks inside `||domain^` rules too, not
+  just plain hostnames. Reject empty labels, edge hyphens and oversized names.
+- Keep the validator's supported wildcard patterns and underscore labels.
+  This is a supported-syntax check, not full AdGuard filter validation.
+- Three offline regressions; no blocklist contents or TV settings change.
+
 ## 2026-10-29 - Validate export endpoints before credentials
 
 - Reject malformed server URLs, embedded credentials, queries and fragments
