@@ -16,6 +16,7 @@ Examples:
 
 import argparse
 import json
+import math
 from datetime import datetime, timezone
 import re
 import sys
@@ -40,7 +41,10 @@ def parse_timestamp(value):
         return None
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
-    return ts
+    try:
+        return ts.astimezone(timezone.utc)
+    except (ValueError, OverflowError):
+        return None
 
 
 def iter_queries_timed(path):
@@ -152,10 +156,17 @@ def main():
             if ts is None:
                 untimed += 1
                 continue
-            epoch = int(ts.timestamp())
-            buckets[epoch - (epoch % (args.timeline * 60))] += 1
+            try:
+                epoch = math.floor(ts.timestamp())
+                bucket = epoch - (epoch % (args.timeline * 60))
+                # Ensure the bucket can be rendered on this platform too.
+                datetime.fromtimestamp(bucket, tz=timezone.utc)
+            except (ValueError, OverflowError, OSError):
+                untimed += 1
+                continue
+            buckets[bucket] += 1
             if filtered:
-                bucket_filtered[epoch - (epoch % (args.timeline * 60))] += 1
+                bucket_filtered[bucket] += 1
         if not buckets:
             sys.exit("No timestamped queries found. --timeline needs an AdGuard Home JSON export.")
         print(f"Timeline: {args.timeline}-minute buckets (times in UTC)")

@@ -165,6 +165,30 @@ class TestTimeline(TempFileMixin, unittest.TestCase):
         self.assertIsNone(m.parse_timestamp(None))
         self.assertIsNone(m.parse_timestamp(""))
 
+    def test_out_of_range_utc_offsets_are_unusable(self):
+        for value in ["0001-01-01T00:00:00+23:59",
+                      "9999-12-31T23:59:59-23:59"]:
+            with self.subTest(value=value):
+                self.assertIsNone(m.parse_timestamp(value))
+
+    def test_timeline_excludes_unrenderable_buckets(self):
+        times = ["0001-01-01T00:00:00+23:59", "9999-12-31T23:59:59-23:59",
+                 "0001-01-01T00:00:00Z", "2026-10-25T09:05:00Z"]
+        log = self.write_tmp(json.dumps({"data": [
+            {"question": {"name": "synthetic.example.com"}, "time": value}
+            for value in times]}))
+        out = self.run_cli([log, "--timeline", "7"])
+        self.assertIn("Entries without a timestamp (excluded): 3", out)
+        self.assertIn("2026-10-25", out)
+
+    def test_pre_epoch_fraction_uses_previous_bucket(self):
+        log = self.write_tmp(json.dumps({"data": [{
+            "question": {"name": "synthetic.example.com"},
+            "time": "1969-12-31T23:59:59.500000Z"}]}))
+        out = self.run_cli([log, "--timeline", "60"])
+        self.assertIn("1969-12-31T23:00Z\t1\t0\t1", out)
+        self.assertNotIn("1970-01-01", out)
+
     def test_timeline_buckets(self):
         log = self.write_tmp(json.dumps(TIMED_LOG))
         out = self.run_cli([log, "--client", "192.168.1.50", "--timeline", "60"])
