@@ -44,6 +44,13 @@ def load_rules(path):
 
 
 def main():
+    try:
+        run_cli()
+    except OSError:
+        sys.exit("Cannot read a blocklist file. Check its path and permissions.")
+
+
+def run_cli():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("listfile", help="Blocklist to validate (AdGuard format or plain hostnames)")
     ap.add_argument("--upstream", help="Upstream list; rules duplicated there are reported as errors")

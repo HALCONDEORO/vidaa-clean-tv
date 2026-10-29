@@ -387,6 +387,46 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+class TestLocalInputFailures(unittest.TestCase):
+    def test_classifier_missing_log_in_both_modes(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            missing = os.path.join(directory, "missing.json")
+            for option in [[], ["--timeline"]]:
+                with self.subTest(option=option), patch.object(sys, "argv",
+                        ["classify_dns_log.py", missing] + option):
+                    with self.assertRaises(SystemExit) as ctx:
+                        m.main()
+                    self.assertIn("Cannot read a local input file", str(ctx.exception))
+
+    def test_classifier_unreadable_comparison_has_no_partial_output(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            log = os.path.join(directory, "log.txt")
+            with open(log, "w", encoding="utf-8") as stream:
+                stream.write("synthetic.example.com\n")
+            with patch.object(sys, "argv", ["classify_dns_log.py", log,
+                    "--blocklist", directory]), redirect_stdout(io.StringIO()) as output:
+                with self.assertRaises(SystemExit) as ctx:
+                    m.main()
+                self.assertIn("Cannot read a local input file", str(ctx.exception))
+                self.assertEqual(output.getvalue(), "")
+
+    def test_validator_missing_primary_and_upstream(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            valid = os.path.join(directory, "valid.txt")
+            missing = os.path.join(directory, "missing.txt")
+            with open(valid, "w", encoding="utf-8") as stream:
+                stream.write("synthetic.example.com\n")
+            for arguments in [[missing], [valid, "--upstream", missing]]:
+                with self.subTest(arguments=arguments), patch.object(sys, "argv",
+                        ["validate_blocklist.py"] + arguments):
+                    with self.assertRaises(SystemExit) as ctx:
+                        vb.main()
+                    self.assertIn("Cannot read a blocklist file", str(ctx.exception))
+
+
 class TestFetchQueryLogHelpers(unittest.TestCase):
     def test_build_url(self):
         url = fql.build_querylog_url("http://192.168.1.10:3000/", 500)
