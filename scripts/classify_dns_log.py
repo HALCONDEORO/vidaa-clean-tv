@@ -165,8 +165,8 @@ def run_cli():
             sys.exit("No DNS queries found. Check the input format (see --help).")
         print("client\tqueries\tfiltered")
         for client, count in sorted(clients.items(), key=lambda item: (-item[1], item[0])):
-            # JSON strings preserve control characters without breaking TSV rows.
-            label = json.dumps(client, ensure_ascii=True) if client else "<unknown>"
+            # Escape controls; a literal prefix also prevents spreadsheet formulas.
+            label = "client:" + json.dumps(client, ensure_ascii=True) if client else "<unknown>"
             print(f"{label}\t{count}\t{filtered_counts[client]}")
         return
 

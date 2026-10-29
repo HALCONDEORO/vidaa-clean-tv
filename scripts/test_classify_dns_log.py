@@ -398,8 +398,8 @@ class TestClientInventory(TempFileMixin, unittest.TestCase):
     def test_counts_and_order_are_deterministic(self):
         log = self.write_tmp(json.dumps(ADGUARD_LOG))
         self.assertEqual(self.run_cli([log, "--clients"]),
-                         'client\tqueries\tfiltered\n"192.168.1.50"\t4\t1\n'
-                         '<unknown>\t1\t0\n"192.168.1.99"\t1\t0\n')
+                         'client\tqueries\tfiltered\nclient:"192.168.1.50"\t4\t1\n'
+                         '<unknown>\t1\t0\nclient:"192.168.1.99"\t1\t0\n')
 
     def test_unknown_plain_input_and_control_characters(self):
         plain = self.write_tmp("synthetic.example.com\n")
@@ -409,7 +409,19 @@ class TestClientInventory(TempFileMixin, unittest.TestCase):
             "question": {"name": "synthetic.example.com"}, "client": "x\ty\nz"}]}))
         output = self.run_cli([log, "--clients"])
         self.assertEqual(len(output.splitlines()), 2)
-        self.assertIn('"x\\ty\\nz"\t1\t0', output)
+        self.assertIn('client:"x\\ty\\nz"\t1\t0', output)
+
+    def test_spreadsheet_import_keeps_formula_clients_literal(self):
+        import csv
+        values = ["=1+1", "+1+1", "-1+1", "@SUM(1)", "\t=1+1", "\r=1+1"]
+        log = self.write_tmp(json.dumps({"data": [
+            {"question": {"name": "synthetic.example.com"}, "client": client}
+            for client in values]}))
+        rows = list(csv.reader(io.StringIO(self.run_cli([log, "--clients"])), delimiter="\t"))
+        self.assertEqual(len(rows), len(values) + 1)
+        self.assertEqual({row[0] for row in rows[1:]},
+                         {"client:" + json.dumps(value, ensure_ascii=True) for value in values})
+        self.assertTrue(all(len(row) == 3 and row[0].startswith("client:") for row in rows[1:]))
 
     def test_rejects_conflicting_modes_and_empty_input(self):
         log = self.write_tmp("synthetic.example.com\n")

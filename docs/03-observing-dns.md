@@ -75,7 +75,8 @@ python3 scripts/classify_dns_log.py querylog.json --clients
 ```
 
 The table shows each identifier, query count and count marked filtered in the
-log. Identifiers are JSON-quoted so unusual characters cannot break the table;
+log. Identifiers have a literal `client:` prefix and a JSON-quoted value so
+unusual characters cannot break the table or become spreadsheet formulas;
 for normal IP addresses, copy the address inside the quotes to `--client`
 (not the quotes themselves). A label with escaped control characters is not
 a normal IP address; inspect your export before using it as a filter.

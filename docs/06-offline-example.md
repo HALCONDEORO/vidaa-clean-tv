@@ -13,8 +13,8 @@ python3 scripts/classify_dns_log.py examples/synthetic-dns.json --clients
 
 ```text
 client	queries	filtered
-"192.0.2.50"	3	2
-"192.0.2.99"	1	0
+client:"192.0.2.50"	3	2
+client:"192.0.2.99"	1	0
 ```
 
 These identifiers come from the invented input, not device discovery.
