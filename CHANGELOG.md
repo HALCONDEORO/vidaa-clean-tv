@@ -3,6 +3,14 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Handle timestamp boundaries in timelines
+
+- Exclude offsets outside Python's UTC date range and unrenderable buckets
+  instead of crashing on imported timestamps; count them as unusable times.
+- Floor negative fractional epochs so pre-1970 queries stay in their actual
+  bucket, rather than being moved into 1970 by integer truncation.
+- Three offline regression tests; no hardware or DNS changes.
+
 ## 2026-10-29 - Refuse unsupported classifier filter semantics
 
 - Do not treat conditional AdGuard rules as unconditional domain coverage.
