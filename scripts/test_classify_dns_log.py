@@ -313,6 +313,50 @@ class TestFetchQueryLogHelpers(unittest.TestCase):
         url = fql.build_querylog_url("http://192.168.1.10:3000/", 500)
         self.assertEqual(url, "http://192.168.1.10:3000/control/querylog?limit=500&offset=0")
 
+    def test_host_rejects_ambiguous_or_credential_bearing_urls(self):
+        invalid = ["https:///missing", "http://", "http://server:bad",
+                   "http://server:65536", "http://server:", "http://u:private@server",
+                   "http://u@server", "http://server?token=private",
+                   "http://server#private", "http://server?", "http://server#",
+                   "http://server/\nprivate", "http://server\\private", "file:///tmp/log"]
+        for host in invalid:
+            with self.subTest(host=host), self.assertRaises(ValueError) as ctx:
+                fql.build_querylog_url(host, 10)
+            self.assertNotIn("private", str(ctx.exception))
+
+    def test_host_accepts_ipv6_https_and_reverse_proxy_paths(self):
+        for host in ["http://[::1]:3000", "https://adguard.example/proxy/"]:
+            with self.subTest(host=host):
+                self.assertEqual(fql.build_querylog_url(host, 2),
+                                 host.rstrip("/") + "/control/querylog?limit=2&offset=0")
+
+    def test_invalid_host_exits_before_credentials_or_network(self):
+        from unittest.mock import patch
+        with patch.object(sys, "argv", ["fetch_query_log.py", "--host",
+                    "http://user:private@server", "--user", "u", "-o", "unused"]), \
+                patch.object(fql.getpass, "getpass") as prompt, \
+                patch.object(fql, "fetch_all_pages") as fetch:
+            with self.assertRaises(SystemExit) as ctx:
+                fql.main()
+            self.assertNotIn("private", str(ctx.exception))
+            prompt.assert_not_called()
+            fetch.assert_not_called()
+
+    def test_network_and_redirect_errors_do_not_echo_remote_details(self):
+        from unittest.mock import patch
+        errors = [fql.urllib.error.URLError("private-network-detail"),
+                  fql.urllib.error.HTTPError("http://server", 302, "Found",
+                      {"Location": "https://other/?private-token"}, None)]
+        for error in errors:
+            with self.subTest(error=type(error).__name__), \
+                    patch.object(sys, "argv", ["fetch_query_log.py", "--host",
+                        "http://server", "--user", "u", "-o", "unused"]), \
+                    patch.dict(os.environ, {"ADGUARD_PASSWORD": "synthetic"}), \
+                    patch.object(fql, "fetch_all_pages", side_effect=error):
+                with self.assertRaises(SystemExit) as ctx:
+                    fql.main()
+                self.assertNotIn("private", str(ctx.exception))
+
     def test_basic_auth_header(self):
         # base64 of "admin:secret"
         self.assertEqual(fql.basic_auth_header("admin", "secret"), "Basic YWRtaW46c2VjcmV0")
