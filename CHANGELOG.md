@@ -3,6 +3,13 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Evidence-first quick start
+
+- Label hardware verification as pending in the README opening and model table.
+- Add date and per-step evidence fields to the model report form.
+- Add synthetic offline examples with regression-tested expected output.
+  Examples are not real captures or recommended blocking rules.
+
 ## 2026-10-28 - Manual-sourced VIDAA menu paths
 
 - docs/01: Enhanced Viewing / ACR, personalised ads and advertising-ID reset

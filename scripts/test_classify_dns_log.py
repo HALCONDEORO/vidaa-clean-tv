@@ -477,5 +477,23 @@ class TestEndToEndPipeline(TempFileMixin, unittest.TestCase):
             srv.shutdown()
 
 
+class TestDocumentedExample(unittest.TestCase):
+    def test_readme_example_outputs(self):
+        import subprocess
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base = [sys.executable, "scripts/classify_dns_log.py", "examples/synthetic-dns.json", "--client", "192.0.2.50"]
+        block = ["--blocklist", "examples/synthetic-blocklist.txt"]
+        cases = [
+            (block, "domain\tqueries\talready_blocked\tseen_filtered\nads.example.com\t2\tyes\tyes\nvideo.example.net\t1\tno\tno\n"),
+            (["--timeline", "60"], "Timeline: 60-minute buckets (times in UTC)\nbucket_start\ttotal\tfiltered\tunblocked\n2026-10-01T09:00Z\t2\t2\t0\n2026-10-01T10:00Z\t1\t0\t1\n"),
+            (block + ["--rules"], "||video.example.net^\n"),
+        ]
+        for args, expected in cases:
+            with self.subTest(args=args):
+                result = subprocess.run(base + args, cwd=root, text=True, capture_output=True, check=True)
+                self.assertEqual(result.stdout, expected)
+                self.assertEqual(result.stderr, "")
+
+
 if __name__ == "__main__":
     unittest.main()
