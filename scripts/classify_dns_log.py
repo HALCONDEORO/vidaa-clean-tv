@@ -144,12 +144,31 @@ def run_cli():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("logfile", help="Query log: AdGuard Home JSON, dnsmasq log, or plain domain list")
     ap.add_argument("--client", help="Only count queries from this client IP (e.g. the TV)")
+    ap.add_argument("--clients", action="store_true",
+                    help="List client identifiers and query counts to help choose --client")
     ap.add_argument("--blocklist", help="Plain-hostname or AdGuard-format list to compare against")
     ap.add_argument("--min-count", type=int, default=1, help="Minimum query count to report (default: 1)")
     ap.add_argument("--rules", action="store_true", help="Print AdGuard candidate rules for unblocked domains")
     ap.add_argument("--timeline", nargs="?", const=60, type=int, metavar="MINUTES",
                     help="Per-bucket query counts over time (default 60). Needs timestamps: AdGuard JSON exports only")
     args = ap.parse_args()
+
+    if args.clients:
+        if args.client or args.blocklist or args.rules or args.timeline is not None:
+            ap.error("--clients cannot be combined with --client, --blocklist, --rules or --timeline")
+        clients = Counter()
+        filtered_counts = Counter()
+        for _domain, client, filtered in iter_queries(args.logfile):
+            clients[client] += 1
+            filtered_counts[client] += int(filtered)
+        if not clients:
+            sys.exit("No DNS queries found. Check the input format (see --help).")
+        print("client\tqueries\tfiltered")
+        for client, count in sorted(clients.items(), key=lambda item: (-item[1], item[0])):
+            # Escape controls; a literal prefix also prevents spreadsheet formulas.
+            label = "client:" + json.dumps(client, ensure_ascii=True) if client else "<unknown>"
+            print(f"{label}\t{count}\t{filtered_counts[client]}")
+        return
 
     if args.timeline is not None:
         if args.timeline < 1:

@@ -3,6 +3,15 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Client inventory for offline logs
+
+- Add `classify_dns_log.py --clients` to list client identifiers, query counts
+  and filtered counts before choosing a `--client` filter.
+- Label missing identifiers unknown, prefix and escape identifiers safely, and reject
+  combinations with other output modes. No network/device discovery occurs.
+- Add usage examples and four offline regression tests, including literal
+  spreadsheet import of formula-like identifiers.
+
 ## 2026-10-29 - Friendly local-input errors
 
 - Report unreadable/missing query logs and comparison/validation lists with
