@@ -10,6 +10,15 @@ main" is the unit of change.
 - Add synthetic offline examples with regression-tested expected output.
   Examples are not real captures or recommended blocking rules.
 
+## 2026-10-29 - Validate imported DNS records
+
+- Skip malformed nested query records and names outside the classifier's
+  supported domain syntax before aggregation or candidate-rule output.
+- Validate single-page exports with the same schema checks as pagination;
+  reject nonpositive page sizes before requesting credentials or network data.
+- Add five offline regression tests. No TV settings, blocklist rules, DNS
+  configuration or filtering thresholds change.
+
 ## 2026-10-28 - Manual-sourced VIDAA menu paths
 
 - docs/01: Enhanced Viewing / ACR, personalised ads and advertising-ID reset

@@ -99,16 +99,13 @@ def main():
 
     if not 1 <= args.pages <= 100:
         sys.exit("--pages must be between 1 and 100")
+    if args.limit < 1:
+        sys.exit("--limit must be >= 1")
 
     password = os.environ.get("ADGUARD_PASSWORD") or getpass.getpass("AdGuard Home password: ")
     try:
-        if args.pages == 1:
-            data = fetch_page(args.host, args.user, password, args.limit)
-            pages_fetched = 1
-            maybe_more = isinstance(data, dict) and len(data.get("data", [])) == args.limit
-        else:
-            data, pages_fetched, maybe_more = fetch_all_pages(
-                args.host, args.user, password, args.limit, args.pages)
+        data, pages_fetched, maybe_more = fetch_all_pages(
+            args.host, args.user, password, args.limit, args.pages)
     except urllib.error.HTTPError as e:
         if e.code in (301, 302, 303, 307, 308):
             sys.exit(f"Redirect to {e.headers.get('Location')} refused - give the exact AdGuard Home address instead")
