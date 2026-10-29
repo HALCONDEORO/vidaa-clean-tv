@@ -3,6 +3,16 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Private, atomic query-log exports
+
+- Create exports with owner-only permissions on POSIX and atomically replace
+  the destination only after successful serialization and flush.
+- Preserve prior exports on write failure, clean temporary files, and replace
+  output symlinks rather than writing through them. Windows users should use
+  a private directory with appropriate ACLs.
+- Five offline tests cover permissions, replacement, failure and symlink cases.
+  No endpoint, credentials, DNS rules or TV settings change.
+
 ## 2026-10-29 - Evidence-first quick start
 
 - Label hardware verification as pending in the README opening and model table.
