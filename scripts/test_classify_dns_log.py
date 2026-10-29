@@ -554,6 +554,68 @@ class TestEndToEndPipeline(TempFileMixin, unittest.TestCase):
             srv.shutdown()
 
 
+class TestPrivateExport(unittest.TestCase):
+    def test_new_and_existing_exports_are_private_and_valid(self):
+        import stat
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "export.json")
+            for existing in (False, True):
+                with self.subTest(existing=existing):
+                    if existing:
+                        os.chmod(path, 0o644)
+                    fql.write_private_export(path, {"data": [], "label": "café"})
+                    with open(path, encoding="utf-8") as fh:
+                        self.assertEqual(json.load(fh), {"data": [], "label": "café"})
+                    if os.name == "posix":
+                        self.assertEqual(stat.S_IMODE(os.stat(path).st_mode), 0o600)
+                    self.assertEqual(os.listdir(directory), ["export.json"])
+
+    def test_failed_replace_preserves_old_export_and_cleans_temp(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "export.json")
+            with open(path, "w") as fh:
+                fh.write("old export")
+            with patch.object(fql.os, "replace", side_effect=OSError("synthetic failure")):
+                with self.assertRaises(OSError):
+                    fql.write_private_export(path, {"data": []})
+            with open(path) as fh:
+                self.assertEqual(fh.read(), "old export")
+            self.assertEqual(os.listdir(directory), ["export.json"])
+
+    def test_failed_serialization_preserves_old_export_and_cleans_temp(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "export.json")
+            with open(path, "w") as fh:
+                fh.write("old export")
+            with self.assertRaises(TypeError):
+                fql.write_private_export(path, {"bad": object()})
+            with open(path) as fh:
+                self.assertEqual(fh.read(), "old export")
+            self.assertEqual(os.listdir(directory), ["export.json"])
+
+    @unittest.skipUnless(os.name == "posix", "POSIX symlink semantics")
+    def test_output_symlink_is_replaced_without_modifying_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = os.path.join(directory, "target")
+            path = os.path.join(directory, "export.json")
+            with open(target, "w") as fh:
+                fh.write("do not change")
+            os.symlink(target, path)
+            fql.write_private_export(path, {"data": []})
+            self.assertFalse(os.path.islink(path))
+            with open(target) as fh:
+                self.assertEqual(fh.read(), "do not change")
+
+    def test_cli_write_error_is_actionable_without_traceback(self):
+        from unittest.mock import patch
+        argv = ["fetch_query_log.py", "--host", "http://localhost", "--user", "test", "-o", "unused.json"]
+        with patch.object(sys, "argv", argv), patch.dict(os.environ, {"ADGUARD_PASSWORD": "synthetic"}), patch.object(fql, "fetch_all_pages", return_value=({"data": []}, 1, False)), patch.object(fql, "write_private_export", side_effect=OSError("synthetic")):
+            with self.assertRaises(SystemExit) as ctx:
+                fql.main()
+            self.assertIn("Cannot save the export", str(ctx.exception))
+
+
 class TestDocumentedExample(unittest.TestCase):
     def test_readme_example_outputs(self):
         import subprocess

@@ -16,7 +16,10 @@ logs in a report.
 
 - `fetch_query_log.py` talks only to the AdGuard Home address you give it,
   refuses HTTP redirects (so credentials cannot be forwarded elsewhere), and
-  writes the export to a local file. Run it only against your own server.
+  writes the export atomically to a local file (owner-only mode 0600 on
+  POSIX). A failed write leaves an existing export unchanged. An output
+  symlink is replaced rather than followed; Windows access follows the
+  destination directory ACLs, so use a private directory there. Run it only against your own server.
 - `classify_dns_log.py` and `validate_blocklist.py` read local files and make
   no network requests at all.
 - The exported `querylog.json` is a record of what your TV looked up: treat

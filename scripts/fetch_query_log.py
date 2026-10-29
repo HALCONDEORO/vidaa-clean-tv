@@ -23,6 +23,7 @@ import getpass
 import json
 import os
 import sys
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -87,6 +88,30 @@ def fetch_all_pages(host, user, password, limit, pages):
     return merged, fetched, last_len == limit
 
 
+def write_private_export(path, data):
+    """Replace an export atomically with a private file (0600 on POSIX).
+
+    The temporary file is in the destination directory so os.replace stays
+    on one filesystem. Existing symlinks are replaced, never followed.
+    """
+    destination = os.path.abspath(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8",
+                                         dir=os.path.dirname(destination),
+                                         prefix=".querylog-", suffix=".tmp",
+                                         delete=False) as fh:
+            temporary = fh.name
+            json.dump(data, fh, ensure_ascii=False, indent=2)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(temporary, destination)
+        temporary = None
+    finally:
+        if temporary is not None:
+            os.unlink(temporary)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", required=True, help="AdGuard Home base URL, e.g. http://192.168.1.10:3000")
@@ -115,8 +140,11 @@ def main():
     except (urllib.error.URLError, OSError) as e:
         sys.exit(f"Cannot reach {args.host} - {e}. Run this on the same network as AdGuard Home.")
 
-    with open(args.output, "w", encoding="utf-8") as fh:
-        json.dump(data, fh, ensure_ascii=False, indent=2)
+    try:
+        write_private_export(args.output, data)
+    except OSError:
+        sys.exit("Cannot save the export. Check the output directory and free space; "
+                 "any existing export was left unchanged.")
     entries = len(data.get("data", [])) if isinstance(data, dict) else 0
     print(f"Wrote {entries} entries ({pages_fetched} page(s)) to {args.output}")
     if maybe_more:
