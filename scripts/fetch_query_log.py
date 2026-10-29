@@ -37,8 +37,28 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def validate_host(host):
+    """Require an HTTP(S) server base URL, not credentials or request data."""
+    try:
+        parsed = urllib.parse.urlsplit(host)
+        _ = parsed.port  # Access validates malformed or out-of-range ports.
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.netloc.endswith(":")
+                or parsed.username is not None or parsed.password is not None
+                or parsed.query or parsed.fragment or "?" in host or "#" in host
+                or any(character.isspace() or ord(character) < 32
+                       or ord(character) == 127 for character in host)
+                or "\\" in host):
+            raise ValueError
+    except ValueError:
+        raise ValueError("--host must be an HTTP(S) base URL without credentials, "
+                         "query or fragment; use --user and the password prompt") from None
+    return host
+
+
 def build_querylog_url(host, limit, offset=0):
     """Build the AdGuard Home /control/querylog URL for one page."""
+    validate_host(host)
     query = urllib.parse.urlencode({"limit": limit, "offset": offset})
     return f"{host.rstrip('/')}/control/querylog?{query}"
 
@@ -127,18 +147,24 @@ def main():
     if args.limit < 1:
         sys.exit("--limit must be >= 1")
 
+    try:
+        validate_host(args.host)
+    except ValueError as e:
+        sys.exit(str(e))
+
     password = os.environ.get("ADGUARD_PASSWORD") or getpass.getpass("AdGuard Home password: ")
     try:
         data, pages_fetched, maybe_more = fetch_all_pages(
             args.host, args.user, password, args.limit, args.pages)
     except urllib.error.HTTPError as e:
         if e.code in (301, 302, 303, 307, 308):
-            sys.exit(f"Redirect to {e.headers.get('Location')} refused - give the exact AdGuard Home address instead")
+            sys.exit("Redirect refused - give the exact AdGuard Home address instead")
         sys.exit(f"HTTP {e.code} from AdGuard Home - check host and credentials")
     except ValueError as e:
         sys.exit(str(e))
     except (urllib.error.URLError, OSError) as e:
-        sys.exit(f"Cannot reach {args.host} - {e}. Run this on the same network as AdGuard Home.")
+        sys.exit("Cannot reach AdGuard Home. Check its address, TLS certificate and network; "
+                 "run this on the same network as your server.")
 
     try:
         write_private_export(args.output, data)

@@ -3,6 +3,15 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Validate export endpoints before credentials
+
+- Reject malformed server URLs, embedded credentials, queries and fragments
+  before requesting a password or making a network request.
+- Keep network errors and refused redirect destinations out of diagnostics.
+  HTTP(S), IPv6 and reverse-proxy base paths remain supported. Plain HTTP is
+  still unencrypted; use it only on a network you trust.
+- Four offline regression tests; no server, DNS or TV changes.
+
 ## 2026-10-29 - Private, atomic query-log exports
 
 - Create exports with owner-only permissions on POSIX and atomically replace
