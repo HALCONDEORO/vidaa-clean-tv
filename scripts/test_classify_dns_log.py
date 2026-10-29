@@ -320,9 +320,10 @@ class TestFetchQueryLogHelpers(unittest.TestCase):
                    "http://server#private", "http://server?", "http://server#",
                    "http://server/\nprivate", "http://server\\private", "file:///tmp/log"]
         for host in invalid:
-            with self.subTest(host=host), self.assertRaises(ValueError) as ctx:
-                fql.build_querylog_url(host, 10)
-            self.assertNotIn("private", str(ctx.exception))
+            with self.subTest(host=host):
+                with self.assertRaises(ValueError) as ctx:
+                    fql.build_querylog_url(host, 10)
+                self.assertNotIn("private", str(ctx.exception))
 
     def test_host_accepts_ipv6_https_and_reverse_proxy_paths(self):
         for host in ["http://[::1]:3000", "https://adguard.example/proxy/"]:
