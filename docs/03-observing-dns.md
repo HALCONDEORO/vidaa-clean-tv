@@ -53,3 +53,14 @@ domain lists cannot produce a timeline. A timeline shows request volume over
 time - for example whether queries spike right after you unblock a domain.
 Volume says nothing about what data was sent, so use it to decide when to
 look closer, not to draw conclusions about content.
+
+### Supported comparison lists
+
+The offline classifier compares plain hostnames and unconditional `||hostname^`
+rules, including their subdomains. It is not an AdGuard filtering engine:
+options (such as client conditions), exceptions, wildcards, hosts-file lines
+and regex filters are rejected with a line number instead of being silently
+misreported as coverage. Use a separate supported-syntax list for comparison;
+do not strip conditions or exceptions from a real filter to make it pass.
+The standalone validator supports some wildcard syntax that the classifier
+does not evaluate. Passing validation does not guarantee classifier support.

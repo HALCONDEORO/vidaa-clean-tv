@@ -23,7 +23,7 @@ from collections import Counter
 
 DNSMASQ_RE = re.compile(r"\bquery\[[A-Z]+\]\s+([A-Za-z0-9._-]+)\s+from\s+(\S+)")
 DOMAIN_RE = re.compile(r"^(?=.{1,253}$)([A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\.)+[A-Za-z]{2,63}\.?$")
-ADGUARD_RULE_RE = re.compile(r"^\|\|([^^/]+)\^?")
+ADGUARD_RULE_RE = re.compile(r"^\|\|([^\s^/]+)\^$")
 
 
 def norm(domain):
@@ -101,16 +101,22 @@ def load_blocklist(path):
     """Load plain hostnames or AdGuard-format rules into a set of domains.
 
     Comment styles skipped: AdGuard '!', '#', '[' headers and '//' (the
-    annotated format the upstream list currently uses).
+    annotated format the upstream list currently uses). Only plain hostnames
+    and unconditional ||hostname^ rules are supported, not filter options,
+    exceptions or wildcard matching. Reject them rather than claim coverage.
     """
     domains = set()
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        for line in fh:
+        for lineno, line in enumerate(fh, 1):
             line = line.strip()
             if not line or line.startswith(("!", "#", "[", "//")):
                 continue
             m = ADGUARD_RULE_RE.match(line)
-            domains.add(norm(m.group(1) if m else line))
+            domain = m.group(1) if m else line
+            if not DOMAIN_RE.fullmatch(domain) or "*" in domain:
+                raise ValueError(f"Unsupported blocklist entry on line {lineno}: "
+                                 "use plain hostnames or unconditional ||hostname^ rules")
+            domains.add(norm(domain))
     return domains
 
 
@@ -174,7 +180,10 @@ def main():
     if not counts:
         sys.exit("No DNS queries found. Check the input format (see --help).")
 
-    blocked = load_blocklist(args.blocklist) if args.blocklist else set()
+    try:
+        blocked = load_blocklist(args.blocklist) if args.blocklist else set()
+    except ValueError as e:
+        sys.exit(str(e))
 
     if args.rules:
         for domain, count in sorted(counts.items()):
