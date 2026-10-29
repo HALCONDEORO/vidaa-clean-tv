@@ -3,6 +3,13 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Handle truncated HTTP exports
+
+- Report incomplete or malformed HTTP responses without an unhandled
+  traceback. Keep the prior export untouched when the response is truncated.
+- A local HTTP-server regression covers premature connection close and
+  output preservation. No retries, remote servers or hardware changes.
+
 ## 2026-10-29 - Handle timestamp boundaries in timelines
 
 - Exclude offsets outside Python's UTC date range and unrenderable buckets

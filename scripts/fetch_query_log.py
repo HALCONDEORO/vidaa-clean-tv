@@ -20,6 +20,7 @@ accepts, so the pipeline is:
 import argparse
 import base64
 import getpass
+import http.client
 import json
 import os
 import sys
@@ -162,7 +163,7 @@ def main():
         sys.exit(f"HTTP {e.code} from AdGuard Home - check host and credentials")
     except ValueError as e:
         sys.exit(str(e))
-    except (urllib.error.URLError, OSError) as e:
+    except (urllib.error.URLError, OSError, http.client.HTTPException):
         sys.exit("Cannot reach AdGuard Home. Check its address, TLS certificate and network; "
                  "run this on the same network as your server.")
 

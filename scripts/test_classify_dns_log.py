@@ -449,6 +449,45 @@ class TestFetchQueryLogHelpers(unittest.TestCase):
         with self.assertRaises(ValueError):
             fql.fetch_page("file:///etc/passwd", "u", "p", 10)
 
+    def test_truncated_http_response_keeps_export_and_has_safe_error(self):
+        import http.server, threading
+        from unittest.mock import patch
+
+        class Truncated(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = b'{"data": ["synthetic-private-record"'
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(body) + 20))
+                self.end_headers()
+                self.wfile.write(body)
+                self.close_connection = True
+
+            def log_message(self, *args):
+                pass
+
+        server = http.server.HTTPServer(("127.0.0.1", 0), Truncated)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                output = os.path.join(directory, "export.json")
+                with open(output, "w", encoding="utf-8") as stream:
+                    stream.write("previous export")
+                with patch.object(sys, "argv", ["fetch_query_log.py", "--host",
+                        f"http://127.0.0.1:{server.server_port}", "--user", "u",
+                        "-o", output]), patch.dict(os.environ, {"ADGUARD_PASSWORD": "synthetic"}):
+                    with self.assertRaises(SystemExit) as ctx:
+                        fql.main()
+                self.assertIn("Cannot reach AdGuard Home", str(ctx.exception))
+                self.assertNotIn("synthetic-private-record", str(ctx.exception))
+                with open(output, encoding="utf-8") as stream:
+                    self.assertEqual(stream.read(), "previous export")
+                self.assertEqual(os.listdir(directory), ["export.json"])
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
     def test_fetch_page_refuses_redirect(self):
         # A redirect response must surface as HTTPError, never as followed content.
         import http.server, threading
