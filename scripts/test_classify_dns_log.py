@@ -300,6 +300,33 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
             self.run_validator([mine, "--upstream", upstream])
         self.assertEqual(ctx.exception.code, 1)
 
+    def test_adguard_rules_validate_hostname_structure(self):
+        invalid = ["..", "-bad.example.com", "bad-.example.com",
+                   "example..com", "example.com.", "singlelabel",
+                   "a" * 64 + ".example.com",
+                   ".".join(["a" * 63] * 4) + ".com"]
+        path = self.write_tmp("\n".join("||" + name + "^" for name in invalid))
+        rules, errors = vb.load_rules(path)
+        self.assertEqual(rules, [])
+        self.assertEqual(len(errors), len(invalid))
+        for number, error in enumerate(errors, 1):
+            self.assertIn("line " + str(number) + ":", error)
+
+    def test_adguard_rules_keep_supported_wildcards_and_underscores(self):
+        path = self.write_tmp("||*.example.com^\n||ad*.example.com^\n"
+                              "||_service.example.com^\n||API-EU.example.com^")
+        rules, errors = vb.load_rules(path)
+        self.assertEqual(errors, [])
+        self.assertEqual([row[2] for row in rules],
+                         ["*.example.com", "ad*.example.com",
+                          "_service.example.com", "api-eu.example.com"])
+
+    def test_invalid_adguard_rule_fails_cli(self):
+        path = self.write_tmp("||example..com^\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([path])
+        self.assertEqual(ctx.exception.code, 1)
+
     def test_real_supplement_is_valid(self):
         import os
         supplement = os.path.join(os.path.dirname(os.path.abspath(__file__)),
