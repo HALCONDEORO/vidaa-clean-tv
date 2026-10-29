@@ -22,7 +22,7 @@ import sys
 from collections import Counter
 
 DNSMASQ_RE = re.compile(r"\bquery\[[A-Z]+\]\s+([A-Za-z0-9._-]+)\s+from\s+(\S+)")
-DOMAIN_RE = re.compile(r"^(?=.{1,253}$)([A-Za-z0-9_-]{1,63}\.)+[A-Za-z]{2,63}\.?$")
+DOMAIN_RE = re.compile(r"^(?=.{1,253}$)([A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\.)+[A-Za-z]{2,63}\.?$")
 ADGUARD_RULE_RE = re.compile(r"^\|\|([^^/]+)\^?")
 
 
@@ -59,26 +59,36 @@ def iter_queries_timed(path):
         for entry in data["data"]:
             if not isinstance(entry, dict):
                 continue
-            question = entry.get("question") or {}
+            question = entry.get("question")
+            if not isinstance(question, dict):
+                continue
             raw_name = question.get("name")
-            if not raw_name:
+            if not isinstance(raw_name, str):
                 continue
-            name = norm(str(raw_name))
-            if not name:
+            # Validate before norm strips the optional DNS root dot.
+            # Multiple trailing dots must not become a different valid name.
+            if not DOMAIN_RE.fullmatch(raw_name.strip()):
                 continue
-            client_info = entry.get("client_info") or {}
+            name = norm(raw_name)
+            client_info = entry.get("client_info")
+            if not isinstance(client_info, dict):
+                client_info = {}
             client = entry.get("client") or client_info.get("name") or ""
+            if not isinstance(client, str):
+                client = ""
             reason = str(entry.get("reason") or "")
             yield name, str(client), reason.startswith("Filtered"), parse_timestamp(entry.get("time"))
         return
     for line in text.splitlines():
         m = DNSMASQ_RE.search(line)
         if m:
-            yield norm(m.group(1)), m.group(2), False, None
+            raw_name = m.group(1)
+            if DOMAIN_RE.fullmatch(raw_name):
+                yield norm(raw_name), m.group(2), False, None
             continue
-        candidate = norm(line)
-        if DOMAIN_RE.match(candidate):
-            yield candidate, "", False, None
+        candidate = line.strip()
+        if DOMAIN_RE.fullmatch(candidate):
+            yield norm(candidate), "", False, None
 
 
 def iter_queries(path):

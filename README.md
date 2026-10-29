@@ -6,7 +6,7 @@
 
 [![test](https://github.com/HALCONDEORO/vidaa-clean-tv/actions/workflows/test.yml/badge.svg)](https://github.com/HALCONDEORO/vidaa-clean-tv/actions/workflows/test.yml)
 
-Reversible cleanup for smart TVs running VIDAA (Hisense, Toshiba and other VIDAA brands): fewer ads and recommendation tiles on the home screen, less telemetry, and content recognition (ACR) turned off. No rooting, no firmware changes, nothing that touches the system.
+Documented privacy settings and DNS filtering guidance for smart TVs running VIDAA, plus offline tools to inspect DNS logs. The aim is to reduce ads and telemetry without rooting or changing firmware. **No model has a completed hardware-verification session in this project yet.** Menu availability and results depend on the model, region and firmware; see [TESTING.md](TESTING.md).
 
 ## Why a separate project
 
@@ -18,7 +18,7 @@ VIDAA sets have no debug bridge, so the cleanup happens where the system does al
 
 | Step | What happens |
 |---|---|
-| **Settings** | A five-minute pass with the remote turns off content recognition (ACR), usage data and personalized ads. Fully reversible. |
+| **Settings** | Use the remote to find documented content-recognition, usage-data and advertising-personalization settings. Availability and effects need verification on your TV; note original values so you can revert. |
 | **Filter** | A DNS filter on your network stops ad and telemetry domains from resolving. The TV itself is never modified. |
 | **Observe** | The filter's query log shows what your TV actually talks to, so new block rules come from evidence, not guesses. |
 
@@ -32,6 +32,8 @@ VIDAA sets have no debug bridge, so the cleanup happens where the system does al
 | **An always-on computer or Raspberry Pi** | Add [docs/02-dns-filtering.md](docs/02-dns-filtering.md) and [docs/03-observing-dns.md](docs/03-observing-dns.md). |
 | **A VIDAA TV you are cleaning for the first time** | Follow [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) and log what you see. |
 
+Try the [offline synthetic example](docs/06-offline-example.md) without a TV, router, credentials or network access.
+
 ## What you get
 
 | Part | What it looks like |
@@ -43,12 +45,12 @@ VIDAA sets have no debug bridge, so the cleanup happens where the system does al
 
 ## Supported TVs
 
-Anything running **VIDAA** - sold as VIDAA or, on the newest sets, as HomeOS, which is the same system under a new name.
+Intended for TVs running **VIDAA**, including sets marketed with HomeOS branding. Check your actual operating system, region and firmware rather than relying on the brand alone. The table describes documentation coverage, not a compatibility certification.
 
-| Platform | What works |
+| Platform | Documentation and verification status |
 |---|---|
-| **Hisense VIDAA** | All three routes. The upstream DNS blocklist is tested on Hisense sets in Europe by its author. |
-| **Toshiba VIDAA** | Route 1 by design (the settings are VIDAA's own); routes 2 and 3 pending the first hardware test on a Toshiba 50UV1553DB. |
+| **Hisense VIDAA** | All three routes are documented. The upstream author reports DNS results on Hisense sets in Europe; this project has not independently verified a Hisense model. |
+| **Toshiba VIDAA** | Settings and DNS routes are documented; menu paths and results still await the first logged Toshiba 50UV1553DB session. |
 | **Android TV / Google TV sets, including Hisense models that actually run Android** | You want [Clean Your TV](https://github.com/Gathin23/cleanyourtv) instead - this project does not apply to Android. |
 | **Samsung (Tizen), LG (webOS)** | Different systems entirely; nothing here applies. |
 

@@ -1,0 +1,2 @@
+! Synthetic example only. Not a TV blocklist.
+||ads.example.com^

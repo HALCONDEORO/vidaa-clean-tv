@@ -19,6 +19,13 @@ body:
     validations:
       required: true
   - type: input
+    id: session_date
+    attributes:
+      label: Session date
+      description: Use YYYY-MM-DD for the date you actually performed these steps.
+    validations:
+      required: true
+  - type: input
     id: firmware
     attributes:
       label: Firmware version
@@ -38,6 +45,17 @@ body:
     attributes:
       label: What changed (and anything you reverted)
       description: Which steps from the docs worked, which did not, and what you reverted.
+  - type: textarea
+    id: step_log
+    attributes:
+      label: Step-by-step session log
+      description: Record expected and observed results separately. Keep private identifiers, passwords and raw DNS logs out of the report. Redact photos before attaching them.
+      value: |
+        | Step and original setting | Expected | Observed | Reverted (yes/no) |
+        |---|---|---|---|
+        | | | | |
+    validations:
+      required: true
   - type: checkboxes
     id: honesty
     attributes:

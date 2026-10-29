@@ -82,6 +82,51 @@ class TestInputs(TempFileMixin, unittest.TestCase):
         self.assertEqual([r[0] for r in rows], ["plain.example.org", "www.youtube.com"])
 
 
+class TestMalformedInputs(TempFileMixin, unittest.TestCase):
+    def test_bad_nested_types_are_skipped_or_ignored(self):
+        path = self.write_tmp(json.dumps({"data": [
+            None, {"question": "bad"}, {"question": ["bad"]},
+            {"question": {"name": 42}},
+            {"question": {"name": "valid.example.com"}, "client_info": "bad"},
+            {"question": {"name": "other.example.com"}, "client_info": {"name": []}},
+        ]}))
+        self.assertEqual(list(m.iter_queries(path)), [
+            ("valid.example.com", "", False), ("other.example.com", "", False)])
+
+    def test_invalid_dns_names_never_become_rules(self):
+        bad = ["bad domain|.com", "-bad.example.com", "bad-.example.com",
+               "x..example.com", "x\\n||evil.com", "a" * 64 + ".com", "*.example.com"]
+        path = self.write_tmp(json.dumps({"data": [
+            {"question": {"name": name}} for name in bad + ["API-EU.example.com."]]}))
+        from unittest.mock import patch
+        output = io.StringIO()
+        with patch.object(sys, "argv", ["classify_dns_log.py", path, "--rules"]), redirect_stdout(output):
+            m.main()
+        self.assertEqual(output.getvalue(), "||api-eu.example.com^\n")
+
+    def test_multiple_trailing_dots_are_rejected_before_normalization(self):
+        from unittest.mock import patch
+        bad = ["bad.example.com..", "bad.example.com...", "..", "..."]
+        inputs = [json.dumps({"data": [{"question": {"name": name}}
+                                       for name in bad + ["good.example.com."]]}),
+                  "\n".join(bad + ["good.example.com."]),
+                  "\n".join("query[A] " + name + " from 192.0.2.50"
+                            for name in bad + ["good.example.com."])]
+        for text in inputs:
+            with self.subTest(text=text):
+                path = self.write_tmp(text)
+                self.assertEqual([row[0] for row in m.iter_queries(path)], ["good.example.com"])
+                output = io.StringIO()
+                with patch.object(sys, "argv", ["classify_dns_log.py", path, "--rules"]), redirect_stdout(output):
+                    m.main()
+                self.assertEqual(output.getvalue(), "||good.example.com^\n")
+
+    def test_dnsmasq_and_plain_reject_label_edge_hyphens(self):
+        path = self.write_tmp("query[A] -bad.example.com from 192.0.2.50\n"
+                              "bad-.example.com\nvalid-host.example.com\n")
+        self.assertEqual(list(m.iter_queries(path)), [("valid-host.example.com", "", False)])
+
+
 TIMED_LOG = {
     "data": [
         {"question": {"name": "ads.vidaa.com."}, "client": "192.168.1.50",
@@ -423,6 +468,38 @@ class TestFetchPagination(unittest.TestCase):
             srv.shutdown()
 
 
+class TestFetchSchema(TempFileMixin, unittest.TestCase):
+    def test_single_and_multi_page_reject_bad_schema_without_writing(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            output = os.path.join(directory, "export.json")
+            for pages in (1, 2):
+                for data in ([], {}, {"data": None}, {"data": "bad"}, {"data": {}}):
+                    with self.subTest(pages=pages, data=data):
+                        with open(output, "w") as fh:
+                            fh.write("keep existing export")
+                        argv = ["fetch_query_log.py", "--host", "http://localhost", "--user", "test",
+                                "--pages", str(pages), "-o", output]
+                        with patch.object(sys, "argv", argv), patch.dict(os.environ, {"ADGUARD_PASSWORD": "synthetic"}), patch.object(fql, "fetch_page", return_value=data):
+                            with self.assertRaises(SystemExit) as ctx:
+                                fql.main()
+                        self.assertIn("expected an object with a 'data' list", str(ctx.exception))
+                        with open(output) as fh:
+                            self.assertEqual(fh.read(), "keep existing export")
+
+    def test_nonpositive_limit_rejected_before_credentials_or_fetch(self):
+        from unittest.mock import patch
+        for limit in (0, -1):
+            argv = ["fetch_query_log.py", "--host", "http://localhost", "--user", "test",
+                    "--limit", str(limit), "-o", "unused.json"]
+            with patch.object(sys, "argv", argv), patch.object(fql.getpass, "getpass") as prompt, patch.object(fql, "fetch_page") as fetch:
+                with self.assertRaises(SystemExit) as ctx:
+                    fql.main()
+                self.assertIn("--limit must be >= 1", str(ctx.exception))
+                prompt.assert_not_called()
+                fetch.assert_not_called()
+
+
 class TestEndToEndPipeline(TempFileMixin, unittest.TestCase):
     """The exact flow docs/03 describes: fetch pages, then classify.
 
@@ -475,6 +552,24 @@ class TestEndToEndPipeline(TempFileMixin, unittest.TestCase):
             self.assertEqual(candidates, ["new-candidate.example.net"])
         finally:
             srv.shutdown()
+
+
+class TestDocumentedExample(unittest.TestCase):
+    def test_readme_example_outputs(self):
+        import subprocess
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base = [sys.executable, "scripts/classify_dns_log.py", "examples/synthetic-dns.json", "--client", "192.0.2.50"]
+        block = ["--blocklist", "examples/synthetic-blocklist.txt"]
+        cases = [
+            (block, "domain\tqueries\talready_blocked\tseen_filtered\nads.example.com\t2\tyes\tyes\nvideo.example.net\t1\tno\tno\n"),
+            (["--timeline", "60"], "Timeline: 60-minute buckets (times in UTC)\nbucket_start\ttotal\tfiltered\tunblocked\n2026-10-01T09:00Z\t2\t2\t0\n2026-10-01T10:00Z\t1\t0\t1\n"),
+            (block + ["--rules"], "||video.example.net^\n"),
+        ]
+        for args, expected in cases:
+            with self.subTest(args=args):
+                result = subprocess.run(base + args, cwd=root, text=True, capture_output=True, check=True)
+                self.assertEqual(result.stdout, expected)
+                self.assertEqual(result.stderr, "")
 
 
 if __name__ == "__main__":

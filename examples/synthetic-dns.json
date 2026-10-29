@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"question": {"name": "ads.example.com."}, "client": "192.0.2.50", "reason": "FilteredBlackList", "time": "2026-10-01T09:05:00Z"},
+    {"question": {"name": "ads.example.com."}, "client": "192.0.2.50", "reason": "FilteredBlackList", "time": "2026-10-01T09:15:00Z"},
+    {"question": {"name": "video.example.net."}, "client": "192.0.2.50", "reason": "NotFilteredNotFound", "time": "2026-10-01T10:05:00Z"},
+    {"question": {"name": "other.example.org."}, "client": "192.0.2.99", "reason": "NotFilteredNotFound", "time": "2026-10-01T10:10:00Z"}
+  ]
+}
