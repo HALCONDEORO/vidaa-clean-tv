@@ -201,6 +201,34 @@ class TestBlocklist(TempFileMixin, unittest.TestCase):
         path = self.write_tmp("//Title: annotated edition\n//Purpose: cleanup\nplain.example.net\n")
         self.assertEqual(m.load_blocklist(path), {"plain.example.net"})
 
+    def test_unsupported_filter_semantics_are_not_silently_covered(self):
+        unsupported = ["||example.com^$client=192.0.2.1", "@@||example.com^",
+                       "||*.example.com^", "||example.com", "||example..com^",
+                       "||example.com^junk", "0.0.0.0 example.com", "/example/"]
+        for rule in unsupported:
+            with self.subTest(rule=rule):
+                path = self.write_tmp("! header\n" + rule + "\n")
+                with self.assertRaisesRegex(ValueError, "line 2"):
+                    m.load_blocklist(path)
+
+    def test_supported_hostnames_normalize_case_and_root_dot(self):
+        path = self.write_tmp("||API-EU.example.com.^\n_telemetry.example.net\n")
+        self.assertEqual(m.load_blocklist(path),
+                         {"api-eu.example.com", "_telemetry.example.net"})
+
+    def test_cli_rejects_options_without_partial_report_or_traceback(self):
+        from unittest.mock import patch
+        log = self.write_tmp("other.example.com\n")
+        blocklist = self.write_tmp("||example.com^$client=192.0.2.1\n")
+        for option in [[], ["--rules"]]:
+            with self.subTest(option=option), patch.object(sys, "argv",
+                    ["classify_dns_log.py", log, "--blocklist", blocklist] + option):
+                output = io.StringIO()
+                with redirect_stdout(output), self.assertRaises(SystemExit) as ctx:
+                    m.main()
+                self.assertEqual(output.getvalue(), "")
+                self.assertIn("line 1", str(ctx.exception))
+
     def test_exact_and_subdomain_match(self):
         blocked = {"blocked.example.net"}
         self.assertTrue(m.is_blocked("blocked.example.net", blocked))

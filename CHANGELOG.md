@@ -3,6 +3,15 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-10-29 - Refuse unsupported classifier filter semantics
+
+- Do not treat conditional AdGuard rules as unconditional domain coverage.
+  Reject options, exceptions, wildcards and malformed filter lines with a
+  line-number error before printing a report or candidate rules.
+- Keep plain hostnames and unconditional `||hostname^` rules, case folding
+  and one trailing root dot. This classifier is not an AdGuard engine.
+- Three offline regression tests; no DNS rules or hardware changed.
+
 ## 2026-10-29 - Check hostnames inside block rules
 
 - Apply hostname label and length checks inside `||domain^` rules too, not
