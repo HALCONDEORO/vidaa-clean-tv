@@ -3,6 +3,14 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-08 - Explicit classifier output modes
+
+- Reject conflicting timeline/domain options instead of silently ignoring them.
+- Reject nonpositive domain thresholds and timeline bucket sizes before reading
+  logs. Explicit domain thresholds are not accepted in timeline/client modes.
+- Document the option matrix and add offline CLI regressions. Valid table,
+  rule, timeline and client-inventory output is unchanged.
+
 ## 2026-10-29 - Client inventory for offline logs
 
 - Add `classify_dns_log.py --clients` to list client identifiers, query counts
