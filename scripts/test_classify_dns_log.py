@@ -886,5 +886,60 @@ class TestDocumentedExample(unittest.TestCase):
                 self.assertEqual(result.stderr, "")
 
 
+class TestCliOptionContracts(TempFileMixin, unittest.TestCase):
+    def run_options(self, options):
+        from unittest.mock import patch
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(sys, "argv", ["classify_dns_log.py", "not-read.json"] + options), \
+             patch.object(m, "iter_queries") as queries, \
+             patch.object(m, "iter_queries_timed") as timed, \
+             patch.object(m, "load_blocklist") as blocklist, \
+             redirect_stdout(output), redirect_stderr(errors):
+            with self.assertRaises(SystemExit) as caught:
+                m.run_cli()
+            self.assertEqual(caught.exception.code, 2)
+            queries.assert_not_called()
+            timed.assert_not_called()
+            blocklist.assert_not_called()
+        self.assertEqual(output.getvalue(), "")
+        return errors.getvalue()
+
+    def test_nonpositive_domain_threshold_is_rejected_before_reading(self):
+        for value in ["0", "-1", "-200"]:
+            with self.subTest(value=value):
+                self.assertIn("--min-count must be >= 1",
+                              self.run_options(["--min-count", value]))
+
+    def test_timeline_cannot_silently_discard_domain_options(self):
+        for options in [["--rules"], ["--blocklist", "not-read.txt"],
+                        ["--min-count", "1"], ["--min-count", "3"]]:
+            for timeline in [["--timeline"], ["--timeline", "15"]]:
+                with self.subTest(options=options, timeline=timeline):
+                    self.assertIn("--timeline cannot be combined", self.run_options(timeline + options))
+
+    def test_client_inventory_does_not_silently_discard_explicit_threshold(self):
+        for value in ["1", "3"]:
+            with self.subTest(value=value):
+                self.assertIn("--clients cannot be combined",
+                              self.run_options(["--clients", "--min-count", value]))
+
+    def test_nonpositive_timeline_is_an_argument_error_before_reading(self):
+        for value in ["0", "-1"]:
+            with self.subTest(value=value):
+                self.assertIn("--timeline minutes must be >= 1",
+                              self.run_options(["--timeline", value]))
+
+    def test_domain_threshold_still_filters_table_and_rules(self):
+        from unittest.mock import patch
+        path = self.write_tmp("repeat.example.com\nrepeat.example.com\nonce.example.net\n")
+        for extra, expected in [([], "domain\tqueries\talready_blocked\tseen_filtered\nrepeat.example.com\t2\tno\tno\n"),
+                                (["--rules"], "||repeat.example.com^\n")]:
+            with self.subTest(extra=extra), patch.object(sys, "argv",
+                    ["classify_dns_log.py", path, "--min-count", "2"] + extra), \
+                    redirect_stdout(io.StringIO()) as output:
+                m.run_cli()
+                self.assertEqual(output.getvalue(), expected)
+
+
 if __name__ == "__main__":
     unittest.main()

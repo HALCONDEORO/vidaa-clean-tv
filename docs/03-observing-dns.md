@@ -41,7 +41,7 @@ python3 scripts/classify_dns_log.py querylog.json \
     --min-count 3 --rules
 ```
 
-To see *when* the TV is most active, add `--timeline` (bucket size in minutes,
+To see *when* the TV is most active, run a separate command with `--timeline` (bucket size in minutes,
 default 60). It prints per-bucket counts split into filtered and unblocked:
 
 ```sh
@@ -86,3 +86,19 @@ right client. This command cannot prove which physical device owns an address.
 Counts include only supported, valid query records, not malformed entries.
 Keep the inventory private just like the log. `--clients` is a separate mode,
 not combined with client filters, blocklist comparisons, rules or timelines.
+
+### Choose one output mode
+
+| Output | Options you can combine |
+| --- | --- |
+| Domain table (default) | `--client`, `--blocklist`, `--min-count N` |
+| Candidate rules (`--rules`) | `--client`, `--blocklist`, `--min-count N` |
+| Timeline (`--timeline [MINUTES]`) | `--client` only |
+| Client inventory (`--clients`) | No other filtering or output options |
+
+`--min-count` is a domain-query threshold, not a timeline-bucket or client
+threshold. It must be at least 1; its default is 1 for tables and rules.
+Timeline minutes must also be at least 1. Conflicting options are rejected
+before the log or comparison list is read, with an error on stderr and exit
+code 2. No partial table or rules are printed. Run separate commands when you
+need both rules and a timeline; options are never silently ignored.

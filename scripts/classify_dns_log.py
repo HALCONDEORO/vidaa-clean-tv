@@ -147,15 +147,32 @@ def run_cli():
     ap.add_argument("--clients", action="store_true",
                     help="List client identifiers and query counts to help choose --client")
     ap.add_argument("--blocklist", help="Plain-hostname or AdGuard-format list to compare against")
-    ap.add_argument("--min-count", type=int, default=1, help="Minimum query count to report (default: 1)")
+    ap.add_argument("--min-count", type=int, default=None,
+                    help="Minimum domain query count (>= 1; table/--rules only, default: 1)")
     ap.add_argument("--rules", action="store_true", help="Print AdGuard candidate rules for unblocked domains")
     ap.add_argument("--timeline", nargs="?", const=60, type=int, metavar="MINUTES",
                     help="Per-bucket query counts over time (default 60). Needs timestamps: AdGuard JSON exports only")
     args = ap.parse_args()
 
+    # Validate all options before reading a private log. A mode must never
+    # silently discard another requested output or filtering option.
+    if args.min_count is not None and args.min_count < 1:
+        ap.error("--min-count must be >= 1")
     if args.clients:
-        if args.client or args.blocklist or args.rules or args.timeline is not None:
-            ap.error("--clients cannot be combined with --client, --blocklist, --rules or --timeline")
+        if (args.client or args.blocklist or args.rules or args.timeline is not None
+                or args.min_count is not None):
+            ap.error("--clients cannot be combined with --client, --blocklist, "
+                     "--rules, --timeline or --min-count")
+    if args.timeline is not None:
+        if args.timeline < 1:
+            ap.error("--timeline minutes must be >= 1")
+        if args.rules or args.blocklist or args.min_count is not None:
+            ap.error("--timeline cannot be combined with --rules, --blocklist or --min-count; "
+                     "use --client to select a device")
+    if args.min_count is None:
+        args.min_count = 1
+
+    if args.clients:
         clients = Counter()
         filtered_counts = Counter()
         for _domain, client, filtered in iter_queries(args.logfile):
@@ -171,8 +188,6 @@ def run_cli():
         return
 
     if args.timeline is not None:
-        if args.timeline < 1:
-            sys.exit("--timeline minutes must be >= 1")
         buckets = Counter()
         bucket_filtered = Counter()
         untimed = 0
