@@ -1,7 +1,14 @@
 # Changelog
 
-Dated entries, newest first. There are no tagged releases yet; "merged to
-main" is the unit of change.
+Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
+RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
+unit of change.
+
+## 2026-11-09 - Release versioning with annotated tags
+
+- RELEASE.md defines vMAJOR.MINOR.PATCH tags cut lazily from green main,
+  with the CHANGELOG as source of truth; the first tag is v0.1.0. No build
+  artifacts: a release is the tag plus its CHANGELOG section.
 
 ## 2026-11-09 - Pi-hole setup and observation docs match AdGuard's
 
