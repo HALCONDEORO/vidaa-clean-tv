@@ -5,6 +5,13 @@ RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
  HEAD
+## 2026-11-09 - Observe startup and input-switch ads in docs/03
+
+- A short section shows how to catch the domains behind full-screen startup
+  and input-switch ads (the top VIDAA complaint of 2025-2026): time the
+  boot or input switch, use `--timeline 1` for one-minute buckets and
+  correlate the spike, keeping the evidence-first rule.
+
 ## 2026-11-09 - Playbook for apps broken by blocking
 
 - TROUBLESHOOTING's "app stopped loading" entry becomes a step-by-step
