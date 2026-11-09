@@ -32,7 +32,9 @@ unknown.
 
 - Standard library only, no dependencies. The test suite must run fully
   offline: `python3 scripts/test_classify_dns_log.py -v`.
-- Keep `validate_blocklist.py` passing on any blocklist change.
+- Keep `validate_blocklist.py` passing on any blocklist change. CI also
+  runs it against the current upstream list, so a supplement rule upstream
+  already covers (a domain or one of its subdomains) fails the build.
 - Never copy an upstream blocklist into this repo. We subscribe to
   [ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist](https://github.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist)
   and keep only a small supplement for domains observed on other VIDAA brands.

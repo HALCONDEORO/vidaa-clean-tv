@@ -3,6 +3,14 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - CI checks the supplement against the upstream list
+
+- New `upstream-overlap` workflow job downloads the upstream Hisense VIDAA
+  blocklist and validates the supplement with `--upstream`, enforcing the
+  contribution rule that the supplement never duplicates upstream coverage.
+  The unit-test matrix stays fully offline; this is the only job that needs
+  the network.
+
 ## 2026-11-09 - Validator flags rules shadowed by a parent domain
 
 - Report a rule as redundant when its parent domain is already listed, in
