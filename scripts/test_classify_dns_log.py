@@ -1028,6 +1028,7 @@ class TestPiholeFtl(TempFileMixin, unittest.TestCase):
         (1794000060, 1, "ads.example.com", "192.168.1.50"),    # gravity: blocked
         (1794000120, 4, "track.example.net", "192.168.1.50"),  # regex: blocked
         (1794000180, 3, "tv.example.org", "192.168.1.51"),     # cache: not blocked
+        (1794000240, 18, "ede15.example.net", "192.168.1.51"), # external EDE15 (v6): blocked
     ]
 
     def test_counts_and_blocked_mapping(self):
@@ -1046,7 +1047,7 @@ class TestPiholeFtl(TempFileMixin, unittest.TestCase):
     def test_clients_listing(self):
         out = self.run_cli([self.make_db(self.ROWS), "--clients"])
         self.assertIn('client:"192.168.1.50"\t3\t2', out)
-        self.assertIn('client:"192.168.1.51"\t1\t0', out)
+        self.assertIn('client:"192.168.1.51"\t2\t1', out)
 
     def test_rules_mode(self):
         blocklist = self.write_tmp("||track.example.net^\n")

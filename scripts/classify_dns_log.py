@@ -67,10 +67,12 @@ def parse_timestamp(value):
 
 SQLITE_MAGIC = b"SQLite format 3\x00"
 
-# Pi-hole FTL status codes that mean the query was blocked (not answered
-# from cache or forwarded): gravity, regex, denylist, external block pages
-# and their CNAME variants.
-PIHOLE_BLOCKED_STATUSES = frozenset({1, 4, 5, 6, 7, 8, 9, 10, 11})
+# Pi-hole FTL status codes (enum query_status in pi-hole/FTL src/enums.h)
+# that mean the query was blocked rather than answered from cache or
+# forwarded: 1 GRAVITY, 4 REGEX, 5 DENYLIST, 6 EXTERNAL_BLOCKED_IP,
+# 7 EXTERNAL_BLOCKED_NULL, 8 EXTERNAL_BLOCKED_NXRA, 9 GRAVITY_CNAME,
+# 10 REGEX_CNAME, 11 DENYLIST_CNAME, 18 EXTERNAL_BLOCKED_EDE15 (v6).
+PIHOLE_BLOCKED_STATUSES = frozenset({1, 4, 5, 6, 7, 8, 9, 10, 11, 18})
 
 
 def iter_queries_pihole_ftl(path):
