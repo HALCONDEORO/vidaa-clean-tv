@@ -3,12 +3,15 @@
 Goal: replace guesses with observations. Record everything the TV resolves,
 then classify it.
 
-1. Set up AdGuard Home (route 2, option A) and point only the TV at it.
+1. Set up AdGuard Home (route 2, option A) or Pi-hole (option B) and point
+   only the TV at it.
 2. Use the TV normally for a day or two: home screen, YouTube, Netflix,
    settings.
-3. Export the query log: from the AdGuard Home web UI, or with
+3. Get the query log. AdGuard Home: export from the web UI, or use
    `scripts/fetch_query_log.py`, which pulls it from the `/control/querylog`
-   API of your own AdGuard Home.
+   API of your own AdGuard Home. Pi-hole: copy `/etc/pihole/pihole-FTL.db`
+   to your working directory (copy, never move: Pi-hole keeps writing to the
+   original) and classify the copy; the classifier opens it read-only.
 
    Credential and data hygiene:
 
@@ -39,6 +42,12 @@ python3 scripts/classify_dns_log.py querylog.json \
     --client 192.168.1.50 \
     --blocklist Blocked_Domains.txt \
     --min-count 3 --rules
+
+# Pi-hole: same command on a copy of the FTL database
+python3 scripts/classify_dns_log.py pihole-FTL.db \
+    --client 192.168.1.50 \
+    --blocklist Blocked_Domains.txt \
+    --min-count 3 --rules
 ```
 
 To see *when* the TV is most active, run a separate command with `--timeline` (bucket size in minutes,
@@ -48,8 +57,8 @@ default 60). It prints per-bucket counts split into filtered and unblocked:
 python3 scripts/classify_dns_log.py querylog.json --client 192.168.1.50 --timeline
 ```
 
-Timestamps exist only in AdGuard Home JSON exports; dnsmasq logs and plain
-domain lists cannot produce a timeline. A timeline shows request volume over
+Timestamps exist in AdGuard Home JSON exports and in Pi-hole FTL
+databases; dnsmasq logs and plain domain lists cannot produce a timeline. A timeline shows request volume over
 time - for example whether queries spike right after you unblock a domain.
 Volume says nothing about what data was sent, so use it to decide when to
 look closer, not to draw conclusions about content.
