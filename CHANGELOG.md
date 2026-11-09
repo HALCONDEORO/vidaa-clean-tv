@@ -4,6 +4,7 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+ HEAD
 ## 2026-11-09 - Playbook for apps broken by blocking
 
 - TROUBLESHOOTING's "app stopped loading" entry becomes a step-by-step
@@ -12,6 +13,15 @@ unit of change.
   by disabling six upstream rules (four recommendation API hosts on
   hismarttv.com, two recommendation-UI hosts on vidaahub.com) while keeping
   the launcher rules (https://github.com/Owen3H/Hisense-VIDAA-DNS-Clean-TV-Blocklist).
+
+## 2026-11-09 - Compare community blocklists in docs/02
+
+- A short "other community lists" section covers Okazakee/tv-dns-blocklist
+  (active, multi-brand, non-breaking policy, VIDAA domains upstream lacks),
+  why forum-recommended lists that later go 404
+  (jnmobilesoft/hisense-u8n-pihole-blocklist) argue for subscribing over
+  copying, and Perflyst/PiHoleBlocklist for other brands. One VIDAA list at
+  a time; no rules copied.
 
 ## 2026-11-09 - Release versioning with annotated tags
 
