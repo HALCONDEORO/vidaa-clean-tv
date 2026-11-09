@@ -792,15 +792,15 @@ class TestFetchSchema(TempFileMixin, unittest.TestCase):
                         with open(output) as fh:
                             self.assertEqual(fh.read(), "keep existing export")
 
-    def test_nonpositive_limit_rejected_before_credentials_or_fetch(self):
+    def test_out_of_range_limit_rejected_before_credentials_or_fetch(self):
         from unittest.mock import patch
-        for limit in (0, -1):
+        for limit in (0, -1, 10001):
             argv = ["fetch_query_log.py", "--host", "http://localhost", "--user", "test",
                     "--limit", str(limit), "-o", "unused.json"]
             with patch.object(sys, "argv", argv), patch.object(fql.getpass, "getpass") as prompt, patch.object(fql, "fetch_page") as fetch:
                 with self.assertRaises(SystemExit) as ctx:
                     fql.main()
-                self.assertIn("--limit must be >= 1", str(ctx.exception))
+                self.assertIn("--limit must be between 1 and 10000", str(ctx.exception))
                 prompt.assert_not_called()
                 fetch.assert_not_called()
 

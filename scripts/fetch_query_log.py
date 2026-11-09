@@ -9,6 +9,12 @@ Example:
   python3 fetch_query_log.py --host http://192.168.1.10:3000 \
       --user admin --limit 500 -o querylog.json
 
+AdGuard Home's API accepts any --limit (its default page is 500 entries and
+it sets no maximum: internal/querylog/searchparams.go). A single request
+with a huge limit makes the server scan and serialize that many entries at
+once, so this script caps the page size at 10000; use --pages (max 100)
+to fetch older entries in bounded steps.
+
 The password is read from the ADGUARD_PASSWORD environment variable, or
 prompted for (not echoed). Output is the same JSON shape classify_dns_log.py
 accepts, so the pipeline is:
@@ -137,7 +143,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", required=True, help="AdGuard Home base URL, e.g. http://192.168.1.10:3000")
     ap.add_argument("--user", required=True, help="AdGuard Home admin username")
-    ap.add_argument("--limit", type=int, default=500, help="Max entries per page (default: 500)")
+    ap.add_argument("--limit", type=int, default=500, help="Max entries per page (default: 500, max: 10000)")
     ap.add_argument("--pages", type=int, default=1,
                     help="Pages to fetch, continuing to older entries until a short page (default: 1, max: 100)")
     ap.add_argument("-o", "--output", required=True, help="Output JSON file for classify_dns_log.py")
@@ -145,8 +151,9 @@ def main():
 
     if not 1 <= args.pages <= 100:
         sys.exit("--pages must be between 1 and 100")
-    if args.limit < 1:
-        sys.exit("--limit must be >= 1")
+    if not 1 <= args.limit <= 10000:
+        sys.exit("--limit must be between 1 and 10000 (the API sets no maximum; "
+                 "the cap keeps one request bounded - use --pages for older entries)")
 
     try:
         validate_host(args.host)
