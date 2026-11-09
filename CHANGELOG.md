@@ -23,6 +23,13 @@ unit of change.
   copying, and Perflyst/PiHoleBlocklist for other brands. One VIDAA list at
   a time; no rules copied.
 
+## 2026-11-09 - FAQ for pre-purchase and day-one questions
+
+- New FAQ.md answers the questions forums keep asking: does VIDAA show ads,
+  can they be turned off, is an account required, what data is collected,
+  why no root/ADB, what blocking breaks and which TVs are covered - each
+  answer routed to the doc that carries the evidence.
+
 ## 2026-11-09 - Release versioning with annotated tags
 
 - RELEASE.md defines vMAJOR.MINOR.PATCH tags cut lazily from green main,
