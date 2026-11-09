@@ -165,6 +165,29 @@ class TestTimeline(TempFileMixin, unittest.TestCase):
         self.assertIsNone(m.parse_timestamp(None))
         self.assertIsNone(m.parse_timestamp(""))
 
+    def test_rfc3339nano_fractional_seconds_parse_on_every_python(self):
+        # AdGuard Home writes entry times with Go's RFC3339Nano: 1-9
+        # fractional digits with trailing zeros trimmed. fromisoformat
+        # before 3.11 accepts only exactly 3 or 6 digits, so real exports
+        # lost every timestamp on Python 3.10.
+        for value, microsecond in [
+                ("2026-10-25T09:05:00.123456789Z", 123456),
+                ("2026-10-25T09:05:00.5Z", 500000),
+                ("2026-10-25T09:05:00.000000001Z", 0),
+                ("2026-10-25T09:05:00.1234567+02:00", 123456)]:
+            with self.subTest(value=value):
+                ts = m.parse_timestamp(value)
+                self.assertIsNotNone(ts)
+                self.assertEqual(ts.microsecond, microsecond)
+
+    def test_timeline_accepts_rfc3339nano_export_times(self):
+        log = self.write_tmp(json.dumps({"data": [{
+            "question": {"name": "synthetic.example.com"},
+            "time": "2026-10-25T09:05:00.123456789Z"}]}))
+        out = self.run_cli([log, "--timeline", "60"])
+        self.assertIn("2026-10-25T09:00Z\t1\t0\t1", out)
+        self.assertNotIn("excluded", out)
+
     def test_out_of_range_utc_offsets_are_unusable(self):
         for value in ["0001-01-01T00:00:00+23:59",
                       "9999-12-31T23:59:59-23:59"]:

@@ -3,6 +3,17 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - Parse AdGuard RFC3339Nano timestamps on every supported Python
+
+- Accept query-log times with 1-9 fractional-second digits. AdGuard Home
+  formats entry times with Go's RFC3339Nano, and fromisoformat before
+  Python 3.11 accepts only exactly 3 or 6 digits, so real exports lost every
+  timestamp on Python 3.10 and timelines reported no timestamped queries.
+  Fractions are normalized to microseconds, matching the 3.11+ parser.
+- Offline regressions cover 1-, 7- and 9-digit fractions and a timeline run
+  on a nanosecond export. Aggregation, tables, rules and client inventories
+  are unchanged.
+
 ## 2026-11-08 - Explicit classifier output modes
 
 - Reject conflicting timeline/domain options instead of silently ignoring them.
