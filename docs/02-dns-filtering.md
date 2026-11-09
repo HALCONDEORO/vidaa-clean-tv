@@ -53,6 +53,26 @@ setup unchanged, and removing the TV from the group reverts it instantly.
 reports YouTube and Netflix keep working. Built for Hisense, so treat its
 effect on a Toshiba as probable but unproven until tested (see TESTING.md).
 
+## Other community lists
+
+The upstream list above is the one this project documents and tests against.
+Others exist; know their trade-offs before mixing:
+
+- [Okazakee/tv-dns-blocklist](https://github.com/Okazakee/tv-dns-blocklist) -
+  actively maintained, multi-brand (Samsung, LG, Roku, VIDAA) with a
+  "non-breaking" curation policy. Its VIDAA section covers domains the
+  upstream list does not (for example several `*.vidaahub.com` reporting and
+  monetization hosts). More coverage usually means more breakage surface:
+  subscribe to one VIDAA list, not two at once.
+- Lists recommended in forum threads come and go:
+  `jnmobilesoft/hisense-u8n-pihole-blocklist`, widely linked on Reddit in
+  2025, already returns 404. This is the practical
+  reason for "subscribe, do not copy": a copied snapshot never gets fixes,
+  and a dead subscription fails loudly instead of silently protecting you.
+- [Perflyst/PiHoleBlocklist](https://github.com/Perflyst/PiHoleBlocklist) -
+  the long-running smart-TV list for other brands; its issues are a good
+  preview of the breakage patterns to expect.
+
 ## The supplement
 
 [blocklists/toshiba-uv1553db-supplement.txt](../blocklists/toshiba-uv1553db-supplement.txt)
