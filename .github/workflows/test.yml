@@ -25,3 +25,18 @@ jobs:
         run: python3 scripts/validate_blocklist.py blocklists/toshiba-uv1553db-supplement.txt
       - name: Check documentation links
         run: python3 scripts/test_docs_links.py -v
+
+  upstream-overlap:
+    # The only job that needs the network: it enforces CONTRIBUTING's rule
+    # that the supplement never duplicates what the upstream Hisense VIDAA
+    # list already covers (an exact domain or one of its subdomains).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Fetch the upstream blocklist
+        run: curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist/main/Blocked_Domains_AdGuard.txt -o "$RUNNER_TEMP/upstream-blocklist.txt"
+      - name: Check the supplement adds nothing upstream already covers
+        run: python3 scripts/validate_blocklist.py blocklists/toshiba-uv1553db-supplement.txt --upstream "$RUNNER_TEMP/upstream-blocklist.txt"
