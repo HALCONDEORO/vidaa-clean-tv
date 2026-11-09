@@ -6,7 +6,7 @@
 
 [![test](https://github.com/HALCONDEORO/vidaa-clean-tv/actions/workflows/test.yml/badge.svg)](https://github.com/HALCONDEORO/vidaa-clean-tv/actions/workflows/test.yml)
 
-Documented privacy settings and DNS filtering guidance for smart TVs running VIDAA, plus offline tools to inspect DNS logs. The aim is to reduce ads and telemetry without rooting or changing firmware. **No model has a completed hardware-verification session in this project yet.** Menu availability and results depend on the model, region and firmware; see [TESTING.md](TESTING.md).
+Documented privacy settings and DNS filtering guidance for smart TVs running VIDAA, plus offline tools to inspect DNS logs. The aim is to reduce ads and telemetry without rooting or changing firmware. **One owner-reported DNS-filtering session is logged (Hisense 65A67H); no model has a completed settings session yet.** Menu availability and results depend on the model, region and firmware; see [TESTING.md](TESTING.md).
 
 ## Why a separate project
 
@@ -49,7 +49,7 @@ Intended for TVs running **VIDAA**, including sets marketed with HomeOS branding
 
 | Platform | Documentation and verification status |
 |---|---|
-| **Hisense VIDAA** | All three routes are documented. The upstream author reports DNS results on Hisense sets in Europe; this project has not independently verified a Hisense model. |
+| **Hisense VIDAA** | All three routes are documented. The upstream author reports DNS results on Hisense sets in Europe; one owner-reported DNS session on a 65A67H is logged in [TESTING.md](TESTING.md). Settings paths are not yet verified on a Hisense model. |
 | **Toshiba VIDAA** | Settings and DNS routes are documented; menu paths and results still await the first logged Toshiba 50UV1553DB session. |
 | **Android TV / Google TV sets, including Hisense models that actually run Android** | You want [Clean Your TV](https://github.com/Gathin23/cleanyourtv) instead - this project does not apply to Android. |
 | **Samsung (Tizen), LG (webOS)** | Different systems entirely; nothing here applies. |

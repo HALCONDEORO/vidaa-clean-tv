@@ -1,14 +1,15 @@
 # Hisense VIDAA
 
-Status: best-documented VIDAA family for this project, through other people's
-published work - we do not own a Hisense set and have tested nothing on one
-ourselves.
+Status: best-documented VIDAA family for this project, mostly through other
+people's published work. One owner-reported DNS session on a Hisense 65A67H is
+logged in [../../TESTING.md](../../TESTING.md); nothing else has been tested
+on a Hisense set here.
 
 | What | Status |
 |---|---|
 | Upstream DNS blocklist | Tested by its author on Hisense VIDAA sets in Europe (Germany), AdGuard Home on a Raspberry Pi; YouTube and Netflix reported working |
 | Settings paths in [../01-on-device-settings.md](../01-on-device-settings.md) | Written from Hisense-family guides; verify the wording on your model |
-| This project's own hardware tests | None |
+| This project's own hardware tests | Route 2 (DNS) on a 65A67H, firmware V0000.09.09G.P0930, 2026-11-08: TV queries blocked, home screen reported cleaner, YouTube and Netflix working. Route 1 settings not yet logged |
 
 The [Clean Your TV non-Android guide](https://cleanyour.tv/not-android)
 covers the VIDAA settings route step by step, sourced to the official VIDAA
