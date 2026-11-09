@@ -58,6 +58,8 @@ Per-model pages live under [docs/tv/](docs/tv/): [Toshiba 50UV1553DB](docs/tv/to
 
 ## Documentation
 
+Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
+
 | Doc | What it covers |
 |---|---|
 | [docs/01-on-device-settings.md](docs/01-on-device-settings.md) | Route 1: the reversible settings pass |
