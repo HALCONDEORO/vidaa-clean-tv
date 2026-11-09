@@ -3,6 +3,17 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - Validator flags rules shadowed by a parent domain
+
+- Report a rule as redundant when its parent domain is already listed, in
+  the same list or in the upstream comparison list: `||example.com^` blocks
+  the whole tree, and the classifier's comparison treats plain hostnames the
+  same way, so a separate `||ads.example.com^` adds nothing. Exact-duplicate
+  and exact-upstream-overlap errors are unchanged.
+- Five offline regressions cover shadowing within a list, plain-hostname
+  parents, upstream parents and the non-shadowed cases that must keep
+  passing. The real supplement (empty by design) still validates.
+
 ## 2026-11-09 - Parse AdGuard RFC3339Nano timestamps on every supported Python
 
 - Accept query-log times with 1-9 fractional-second digits. AdGuard Home

@@ -375,6 +375,36 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
             self.run_validator([mine, "--upstream", upstream])
         self.assertEqual(ctx.exception.code, 1)
 
+    def test_parent_domain_shadows_subdomain_rule(self):
+        path = self.write_tmp("||example.com^\n||ads.example.com^\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([path])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_plain_parent_hostname_shadows_subdomain_rule(self):
+        # The classifier's comparison treats plain hostnames as covering
+        # their subdomains, so the validator flags the same redundancy.
+        path = self.write_tmp("example.com\n||ads.example.com^\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([path])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_subdomain_without_listed_parent_passes(self):
+        path = self.write_tmp("||example.com^\n||ads.other-example.net^\n")
+        self.run_validator([path])  # no SystemExit
+
+    def test_upstream_parent_domain_shadows_subdomain_rule(self):
+        mine = self.write_tmp("||ads.example.com^\n")
+        upstream = self.write_tmp("||example.com^\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([mine, "--upstream", upstream])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_upstream_unrelated_subdomain_passes(self):
+        mine = self.write_tmp("||ads.example.com^\n")
+        upstream = self.write_tmp("||example.net^\n")
+        self.run_validator([mine, "--upstream", upstream])  # no SystemExit
+
     def test_adguard_rules_validate_hostname_structure(self):
         invalid = ["..", "-bad.example.com", "bad-.example.com",
                    "example..com", "example.com.", "singlelabel",

@@ -7,7 +7,9 @@ Checks:
   - every non-comment line is a well-formed AdGuard rule (||domain^) or a
     plain hostname
   - no duplicate rules
-  - optionally, no overlap with an upstream list (--upstream FILE)
+  - no rule shadowed by a parent-domain rule in the same list
+  - optionally, no overlap with an upstream list (--upstream FILE),
+    including subdomains of upstream rules
 
 Exit code 0 when valid, 1 with diagnostics otherwise.
 
@@ -22,6 +24,12 @@ import sys
 ADGUARD_RULE_RE = re.compile(r"^\|\|([A-Za-z0-9*_.-]+)\^$")
 HOSTNAME_RE = re.compile(
     r"^(?=.{1,253}$)([A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\.)+[A-Za-z]{2,63}$")
+
+
+def parent_domains(domain):
+    """Parent domains of a hostname, closest first, never the bare TLD."""
+    parts = domain.split(".")
+    return [".".join(parts[i:]) for i in range(1, len(parts) - 1)]
 
 
 def load_rules(path):
@@ -65,6 +73,16 @@ def run_cli():
         else:
             seen[domain] = lineno
 
+    # A rule for a subdomain adds nothing when its parent domain is already
+    # listed: ||example.com^ blocks the whole tree, and the classifier's
+    # comparison treats plain hostnames the same way.
+    for lineno, raw, domain in rules:
+        for parent in parent_domains(domain):
+            if parent in seen:
+                errors.append(f"line {lineno}: redundant, already covered by "
+                              f"parent domain on line {seen[parent]}: {raw!r}")
+                break
+
     if args.upstream:
         upstream_rules, upstream_errors = load_rules(args.upstream)
         errors.extend(f"upstream: {e}" for e in upstream_errors)
@@ -72,6 +90,12 @@ def run_cli():
         for lineno, raw, domain in rules:
             if domain in upstream_domains:
                 errors.append(f"line {lineno}: already covered by upstream: {raw!r}")
+                continue
+            for parent in parent_domains(domain):
+                if parent in upstream_domains:
+                    errors.append(f"line {lineno}: subdomain of an upstream rule, "
+                                  f"already covered: {raw!r}")
+                    break
 
     if errors:
         for e in errors:
