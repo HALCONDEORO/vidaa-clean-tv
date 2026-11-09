@@ -5,6 +5,7 @@ or directly: python3 scripts/test_classify_dns_log.py"""
 import io
 import json
 import os
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -992,6 +993,73 @@ class TestCliOptionContracts(TempFileMixin, unittest.TestCase):
                     redirect_stdout(io.StringIO()) as output:
                 m.run_cli()
                 self.assertEqual(output.getvalue(), expected)
+
+
+class TestPiholeFtl(TempFileMixin, unittest.TestCase):
+    """Pi-hole FTL database input (SQLite 'queries' table, read-only)."""
+
+    def run_cli(self, argv):
+        buf = io.StringIO()
+        argv0 = sys.argv
+        sys.argv = ["classify_dns_log.py"] + argv
+        try:
+            with redirect_stdout(buf):
+                m.main()
+        finally:
+            sys.argv = argv0
+        return buf.getvalue()
+
+    def make_db(self, rows, table_sql="CREATE TABLE queries (id INTEGER PRIMARY KEY, "
+                "timestamp INTEGER, type INTEGER, status INTEGER, domain TEXT, client TEXT)"):
+        fd, path = tempfile.mkstemp(suffix=".db")
+        os.close(fd)
+        conn = sqlite3.connect(path)
+        conn.execute(table_sql)
+        if "queries" in table_sql:
+            conn.executemany("INSERT INTO queries (timestamp, type, status, domain, client) "
+                             "VALUES (?, 1, ?, ?, ?)", rows)
+        conn.commit()
+        conn.close()
+        self.addCleanup(os.unlink, path)
+        return path
+
+    ROWS = [
+        (1794000000, 2, "ads.example.com", "192.168.1.50"),    # forwarded: not blocked
+        (1794000060, 1, "ads.example.com", "192.168.1.50"),    # gravity: blocked
+        (1794000120, 4, "track.example.net", "192.168.1.50"),  # regex: blocked
+        (1794000180, 3, "tv.example.org", "192.168.1.51"),     # cache: not blocked
+        (1794000240, 18, "ede15.example.net", "192.168.1.51"), # external EDE15 (v6): blocked
+    ]
+
+    def test_counts_and_blocked_mapping(self):
+        out = self.run_cli([self.make_db(self.ROWS), "--client", "192.168.1.50"])
+        # already_blocked is "no": no --blocklist was given. seen_filtered
+        # reflects the Pi-hole status (gravity/regex blocks).
+        self.assertIn("ads.example.com\t2\tno\tyes", out)
+        self.assertIn("track.example.net\t1\tno\tyes", out)
+        self.assertNotIn("tv.example.org", out)
+
+    def test_timeline_uses_epoch_timestamps(self):
+        out = self.run_cli([self.make_db(self.ROWS[:2]), "--timeline", "60"])
+        self.assertIn("bucket_start", out)
+        self.assertIn("\t2\t1\t1", out)
+
+    def test_clients_listing(self):
+        out = self.run_cli([self.make_db(self.ROWS), "--clients"])
+        self.assertIn('client:"192.168.1.50"\t3\t2', out)
+        self.assertIn('client:"192.168.1.51"\t2\t1', out)
+
+    def test_rules_mode(self):
+        blocklist = self.write_tmp("||track.example.net^\n")
+        out = self.run_cli([self.make_db(self.ROWS), "--rules", "--blocklist", blocklist])
+        self.assertIn("||tv.example.org^", out)
+        self.assertNotIn("track.example.net", out)
+
+    def test_missing_queries_table_is_a_clean_error(self):
+        path = self.make_db([], table_sql="CREATE TABLE other (x INTEGER)")
+        with self.assertRaises(SystemExit) as cm:
+            self.run_cli([path])
+        self.assertIn("Pi-hole FTL", str(cm.exception.code))
 
 
 if __name__ == "__main__":

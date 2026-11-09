@@ -5,6 +5,7 @@ Part of VIDAA Clean TV. Standard library only, no network access.
 
 Accepted inputs (auto-detected):
   - AdGuard Home query log JSON export ({"data": [{"question": {"name": ...}, "client": ..., "reason": ...}, ...]})
+  - Pi-hole FTL database (pihole-FTL.db, SQLite 'queries' table)
   - dnsmasq log lines ('query[A] example.com from 192.168.1.10')
   - plain text, one domain per line
 
@@ -17,9 +18,12 @@ Examples:
 import argparse
 import json
 import math
+import sqlite3
 from datetime import datetime, timezone
+import os
 import re
 import sys
+import urllib.parse
 from collections import Counter
 
 DNSMASQ_RE = re.compile(r"\bquery\[[A-Z]+\]\s+([A-Za-z0-9._-]+)\s+from\s+(\S+)")
@@ -61,12 +65,57 @@ def parse_timestamp(value):
         return None
 
 
+SQLITE_MAGIC = b"SQLite format 3\x00"
+
+# Pi-hole FTL status codes (enum query_status in pi-hole/FTL src/enums.h)
+# that mean the query was blocked rather than answered from cache or
+# forwarded: 1 GRAVITY, 4 REGEX, 5 DENYLIST, 6 EXTERNAL_BLOCKED_IP,
+# 7 EXTERNAL_BLOCKED_NULL, 8 EXTERNAL_BLOCKED_NXRA, 9 GRAVITY_CNAME,
+# 10 REGEX_CNAME, 11 DENYLIST_CNAME, 18 EXTERNAL_BLOCKED_EDE15 (v6).
+PIHOLE_BLOCKED_STATUSES = frozenset({1, 4, 5, 6, 7, 8, 9, 10, 11, 18})
+
+
+def iter_queries_pihole_ftl(path):
+    """Yield (domain, client, filtered, timestamp) from a Pi-hole FTL database.
+
+    Read-only: the database is opened with mode=ro so a live Pi-hole file is
+    never modified. Timestamps are unix epoch seconds, matching --timeline.
+    """
+    uri = "file:%s?mode=ro" % urllib.parse.quote(os.path.abspath(path))
+    try:
+        conn = sqlite3.connect(uri, uri=True)
+        try:
+            rows = conn.execute("SELECT domain, client, status, timestamp FROM queries")
+            for domain, client, status, ts in rows:
+                if not isinstance(domain, str) or not DOMAIN_RE.fullmatch(domain.strip()):
+                    continue
+                stamp = None
+                if isinstance(ts, (int, float)):
+                    try:
+                        stamp = datetime.fromtimestamp(ts, tz=timezone.utc)
+                    except (ValueError, OverflowError, OSError):
+                        stamp = None
+                yield (norm(domain), str(client or ""),
+                       status in PIHOLE_BLOCKED_STATUSES, stamp)
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        raise ValueError("Cannot read the Pi-hole FTL database: expected the SQLite "
+                         "queries table (domain, client, status, timestamp). "
+                         "Copy /etc/pihole/pihole-FTL.db and classify the copy.") from None
+
+
 def iter_queries_timed(path):
     """Yield (domain, client, filtered, timestamp_or_None) from any supported input.
 
-    Only AdGuard Home JSON exports carry timestamps; dnsmasq and plain lists
-    yield None in the last field.
+    AdGuard Home JSON exports and Pi-hole FTL databases carry timestamps;
+    dnsmasq and plain lists yield None in the last field.
     """
+    with open(path, "rb") as fh:
+        magic = fh.read(len(SQLITE_MAGIC))
+    if magic == SQLITE_MAGIC:
+        yield from iter_queries_pihole_ftl(path)
+        return
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         text = fh.read()
     try:
@@ -152,11 +201,13 @@ def main():
         run_cli()
     except OSError:
         sys.exit("Cannot read a local input file. Check its path and permissions.")
+    except ValueError as e:
+        sys.exit(str(e))
 
 
 def run_cli():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("logfile", help="Query log: AdGuard Home JSON, dnsmasq log, or plain domain list")
+    ap.add_argument("logfile", help="Query log: AdGuard Home JSON, Pi-hole FTL database, dnsmasq log, or plain domain list")
     ap.add_argument("--client", help="Only count queries from this client IP (e.g. the TV)")
     ap.add_argument("--clients", action="store_true",
                     help="List client identifiers and query counts to help choose --client")
@@ -165,7 +216,7 @@ def run_cli():
                     help="Minimum domain query count (>= 1; table/--rules only, default: 1)")
     ap.add_argument("--rules", action="store_true", help="Print AdGuard candidate rules for unblocked domains")
     ap.add_argument("--timeline", nargs="?", const=60, type=int, metavar="MINUTES",
-                    help="Per-bucket query counts over time (default 60). Needs timestamps: AdGuard JSON exports only")
+                    help="Per-bucket query counts over time (default 60). Needs timestamps: AdGuard JSON or Pi-hole FTL database")
     args = ap.parse_args()
 
     # Validate all options before reading a private log. A mode must never
@@ -223,7 +274,7 @@ def run_cli():
             if filtered:
                 bucket_filtered[bucket] += 1
         if not buckets:
-            sys.exit("No timestamped queries found. --timeline needs an AdGuard Home JSON export.")
+            sys.exit("No timestamped queries found. --timeline needs an AdGuard Home JSON export or a Pi-hole FTL database.")
         print(f"Timeline: {args.timeline}-minute buckets (times in UTC)")
         print("bucket_start\ttotal\tfiltered\tunblocked")
         for bucket in sorted(buckets):
