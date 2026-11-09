@@ -3,6 +3,16 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - Pi-hole setup and observation docs match AdGuard's
+
+- docs/02 walks Pi-hole through subscribing the blocklist (Lists/Adlists,
+  gravity update) and scoping it to only the TV (groups/clients), with the
+  same revert-by-removal guidance AdGuard had.
+- docs/03 covers observing through Pi-hole: classify a copy of
+  `/etc/pihole/pihole-FTL.db` (copied, never moved), and the timeline note
+  now correctly says timestamps come from AdGuard JSON exports or Pi-hole
+  FTL databases.
+
 ## 2026-11-09 - Classify Pi-hole FTL databases
 
 - `classify_dns_log.py` auto-detects a Pi-hole `pihole-FTL.db` (SQLite

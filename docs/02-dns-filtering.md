@@ -31,8 +31,23 @@ https://raw.githubusercontent.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blockli
 ```
 
 AdGuard Home: **Filters → DNS blocklists → Add blocklist → Add a custom list**,
-paste the URL, save, then **Update filters**. Pi-hole accepts the same URL; use
-`Blocked_Domains.txt` from the same repo if your filter wants plain hostnames.
+paste the URL, save, then **Update filters**.
+
+Pi-hole: **Lists** (v6; **Group Management → Adlists** on v5) → paste the
+same URL in the address field, save, then update gravity
+(**Tools → Update Gravity** or `pihole -g`). Pi-hole parses the AdGuard
+syntax of that list directly; use `Blocked_Domains.txt` from the same repo
+if your filter wants plain hostnames.
+
+### Limit the filter to the TV only
+
+AdGuard Home: **Client settings** → add the TV (by IP or MAC), and under
+**Filters** choose only the VIDAA list for that client.
+
+Pi-hole: **Group Management** (v5; **Clients/Groups** on v6) → create a
+group (for example `tv`), add the TV as a client by IP or MAC, then assign
+the VIDAA list to that group only. Every other device keeps your previous
+setup unchanged, and removing the TV from the group reverts it instantly.
 
 137 active rules, observed on real Hisense VIDAA sets in Europe; the author
 reports YouTube and Netflix keep working. Built for Hisense, so treat its
