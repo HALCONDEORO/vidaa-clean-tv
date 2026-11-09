@@ -3,6 +3,17 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - fetch_query_log caps --limit per page
+
+- Reject `--limit` above 10000. AdGuard Home's query-log API accepts any
+  limit (default page 500, no maximum: internal/querylog/searchparams.go),
+  so a single huge page made the server scan and serialize that many entries
+  at once; the cap keeps one request bounded and `--pages` (max 100) still
+  reaches older entries.
+- Offline regressions cover the limit cap; CI now discovers every
+  `scripts/test_*.py` module instead of naming the test files one by one
+  (the docs-link check runs inside discovery, not as a duplicate step).
+
 ## 2026-11-09 - DeepSource analysis configuration
 
 - Add `.deepsource.toml` (Python analyzer, test files marked) so the
