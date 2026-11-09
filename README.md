@@ -82,7 +82,7 @@ Per-model pages live under [docs/tv/](docs/tv/): [Toshiba 50UV1553DB](docs/tv/to
 
 ## Development
 
-`python3 scripts/test_classify_dns_log.py -v` runs the offline test suite (stdlib only). CI runs it, plus a syntax and duplicate validation of the supplement blocklist and a check that internal documentation links resolve, on every push and pull request across Python 3.10-3.13.
+`python3 scripts/test_classify_dns_log.py -v` runs the offline test suite (stdlib only). CI runs it, plus a syntax and duplicate validation of the supplement blocklist and a check that internal documentation links resolve, on every push and pull request across Python 3.10-3.14.
 
 ## Contributing
 

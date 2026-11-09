@@ -3,6 +3,11 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - CI also tests Python 3.14
+
+- Add Python 3.14 (released 7 October 2025) to the test matrix and update
+  the documented 3.10-3.14 range.
+
 ## 2026-11-09 - CI checks the supplement against the upstream list
 
 - New `upstream-overlap` workflow job downloads the upstream Hisense VIDAA
