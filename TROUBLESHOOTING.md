@@ -15,10 +15,26 @@ privacy section after every update. Thirty seconds.
 
 ## An app stopped loading after enabling the blocklist
 
-A domain the app needs is probably blocked. Open the query log (route 3),
-reproduce the problem, look at what was just blocked, remove the last group
-you added and re-add rules one at a time. If a rule in the upstream list is
-the cause, report it there.
+A domain the app needs is probably blocked. Work it as an experiment:
+
+1. Open the query log (route 3) and reproduce the problem.
+2. Look at what was blocked in that moment: `classify_dns_log.py` marks
+   `seen_filtered=yes` for exactly those domains.
+3. Unblock the smallest candidate (one domain, or the one functional group
+   you added last) and retest. Keep the smallest unblock that fixes the app.
+4. Log what you unblocked and why in TESTING.md, so the next firmware update
+   does not send you back to zero.
+
+Known case - Prime Video loses thumbnails and parts of its UI: a fork of the
+upstream list reports that four recommendation API hosts
+(`content-recommendation`, `api-recommendation`, `api-recommendation-eu` and
+`api-recommendation-em`, all `.hismarttv.com`) and two recommendation-UI
+hosts (`detail-ui-eu` and `recommend-ui-eu`, both `.vidaahub.com`) cause it,
+and comments out exactly those six rules to restore Prime Video while
+keeping the launcher-level recommendation rules active
+(https://github.com/Owen3H/Hisense-VIDAA-DNS-Clean-TV-Blocklist). If you hit
+this, comment out only the rules you can confirm, not the whole list. If a rule in the upstream list is the cause, report it there -
+breakage reports are how these lists improve.
 
 ## Icons or artwork load slowly, or appear as empty placeholders
 

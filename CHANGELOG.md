@@ -4,6 +4,15 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-09 - Playbook for apps broken by blocking
+
+- TROUBLESHOOTING's "app stopped loading" entry becomes a step-by-step
+  experiment (query log, `seen_filtered`, smallest unblock, log it), with
+  the documented Prime Video case: a fork restores Prime Video's thumbnails
+  by disabling six upstream rules (four recommendation API hosts on
+  hismarttv.com, two recommendation-UI hosts on vidaahub.com) while keeping
+  the launcher rules (https://github.com/Owen3H/Hisense-VIDAA-DNS-Clean-TV-Blocklist).
+
 ## 2026-11-09 - Release versioning with annotated tags
 
 - RELEASE.md defines vMAJOR.MINOR.PATCH tags cut lazily from green main,
