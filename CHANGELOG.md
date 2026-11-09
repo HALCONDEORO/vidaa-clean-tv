@@ -3,6 +3,18 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - Classify Pi-hole FTL databases
+
+- `classify_dns_log.py` auto-detects a Pi-hole `pihole-FTL.db` (SQLite
+  header) and reads its `queries` table read-only: domain, client, epoch
+  timestamp and blocked status (gravity, regex, denylist, external blocks
+  and their CNAME variants). `--timeline`, `--clients`, `--rules` and the
+  table output all work on it; a SQLite file without the expected schema
+  exits with a clear error instead of a traceback.
+- Offline regressions build a temporary FTL database with the stdlib
+  sqlite3 module: counts and blocked mapping, timeline buckets, client
+  listing, rules mode and the schema-mismatch error.
+
 ## 2026-11-09 - fetch_query_log caps --limit per page
 
 - Reject `--limit` above 10000. AdGuard Home's query-log API accepts any
