@@ -25,6 +25,8 @@ from collections import Counter
 DNSMASQ_RE = re.compile(r"\bquery\[[A-Z]+\]\s+([A-Za-z0-9._-]+)\s+from\s+(\S+)")
 DOMAIN_RE = re.compile(r"^(?=.{1,253}$)([A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?\.)+[A-Za-z]{2,63}\.?$")
 ADGUARD_RULE_RE = re.compile(r"^\|\|([^\s^/]+)\^$")
+RFC3339_FRACTION_RE = re.compile(
+    r"^(\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}:\d{2})\.(\d+)(Z|[+-]\d{2}:?\d{2})?$")
 
 
 def norm(domain):
@@ -32,11 +34,23 @@ def norm(domain):
 
 
 def parse_timestamp(value):
-    """Parse an AdGuard 'time' field to an aware datetime; None if unusable."""
+    """Parse an AdGuard 'time' field to an aware datetime; None if unusable.
+
+    AdGuard Home formats entry times with Go's RFC3339Nano, which emits 1-9
+    fractional-second digits. fromisoformat before Python 3.11 accepts only
+    exactly 3 or 6, so normalize the fraction to microseconds first.
+    Truncation matches the 3.11+ parser, and minute buckets need no more.
+    """
     if not value:
         return None
+    text = str(value).strip()
+    fraction = RFC3339_FRACTION_RE.match(text)
+    if fraction:
+        text = "%s.%s%s" % (fraction.group(1),
+                            (fraction.group(2) + "000000")[:6],
+                            fraction.group(3) or "")
     try:
-        ts = datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+        ts = datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
         return None
     if ts.tzinfo is None:
