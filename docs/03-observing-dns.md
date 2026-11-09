@@ -35,6 +35,19 @@ then classify it.
 
 Never add a domain you have not observed your own TV resolve.
 
+### Catching startup and input-switch ads
+
+Owners also report full-screen ads at power-on or when switching inputs.
+To find the domains behind them instead of guessing: note the exact time,
+cold-boot the TV or switch inputs once, then export the query log and
+search the raw entries in the seconds around that moment. `--timeline 1`
+narrows the search to the one-minute bucket that spikes, but buckets only
+carry counts - the domains come from the log itself. Cross-check each
+candidate against the classified table: a domain that appears only in the
+seconds around the ad is a candidate; one that also serves artwork or
+search shows up in normal browsing too, which is how you avoid breaking
+the home screen.
+
 ```sh
 python3 scripts/fetch_query_log.py --host http://192.168.1.10:3000 \
     --user admin --pages 10 -o querylog.json

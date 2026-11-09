@@ -4,7 +4,14 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
- HEAD
+## 2026-11-09 - Observe startup and input-switch ads in docs/03
+
+- A short section shows how to catch the domains behind full-screen startup
+  and input-switch ads, which owners also report: note the exact boot or
+  input-switch time, search the raw query log around that window
+  (`--timeline 1` narrows it to the spiking minute, but buckets only carry
+  counts) and cross-check candidates against the classified table.
+
 ## 2026-11-09 - Playbook for apps broken by blocking
 
 - TROUBLESHOOTING's "app stopped loading" entry becomes a step-by-step
