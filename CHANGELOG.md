@@ -3,6 +3,14 @@
 Dated entries, newest first. There are no tagged releases yet; "merged to
 main" is the unit of change.
 
+## 2026-11-09 - DeepSource analysis configuration
+
+- Add `.deepsource.toml` (Python analyzer, test files marked) so the
+  DeepSource check installed on the repository runs real analysis instead of
+  reporting "skipping" on every pull request. If it still skips after this
+  merges, the remaining step is dashboard-side: activate analysis for the
+  repo on app.deepsource.com or uninstall the integration.
+
 ## 2026-11-09 - CI also tests Python 3.14
 
 - Add Python 3.14 (released 7 October 2025) to the test matrix and update
