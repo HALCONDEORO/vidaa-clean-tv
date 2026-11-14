@@ -34,6 +34,8 @@ This project works through the TV's own settings and the network it talks to. It
 | **An always-on computer or Raspberry Pi** | Add [docs/02-dns-filtering.md](docs/02-dns-filtering.md) and [docs/03-observing-dns.md](docs/03-observing-dns.md). |
 | **A VIDAA TV you are cleaning for the first time** | Follow [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) and log what you see. |
 
+New here? [docs/00-start-here.md](docs/00-start-here.md) walks from identifying your exact TV to one concrete reversible action.
+
 Try the [offline synthetic example](docs/06-offline-example.md) without a TV, router, credentials or network access.
 
 ## What you get
@@ -64,6 +66,7 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 
 | Doc | What it covers |
 |---|---|
+| [docs/00-start-here.md](docs/00-start-here.md) | From "I have a VIDAA TV" to a first real, reversible action |
 | [docs/01-on-device-settings.md](docs/01-on-device-settings.md) | Route 1: the reversible settings pass |
 | [docs/02-dns-filtering.md](docs/02-dns-filtering.md) | Route 2: DNS filtering setup, options and honest warnings |
 | [docs/03-observing-dns.md](docs/03-observing-dns.md) | Route 3: observing DNS and building your own rules |
