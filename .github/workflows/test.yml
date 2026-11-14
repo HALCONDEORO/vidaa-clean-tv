@@ -24,6 +24,8 @@ jobs:
         run: python3 -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Validate supplement blocklist
         run: python3 scripts/validate_blocklist.py blocklists/toshiba-uv1553db-supplement.txt
+      - name: Validate the synthetic model report example
+        run: python3 scripts/validate_model_report.py examples/model-report.example.json
 
   upstream-overlap:
     # The only job that needs the network: it enforces CONTRIBUTING's rule
