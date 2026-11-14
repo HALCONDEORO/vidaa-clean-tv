@@ -1,5 +1,7 @@
 # Check compatibility by feature, not brand
 
+English | [Español](07-compatibility.es.md)
+
 A Hisense or Toshiba badge is not enough to choose a cleanup method. Even
 when two sets run VIDAA, a DNS result on one model does not verify its
 settings menus, local remote control or any software modification on another.

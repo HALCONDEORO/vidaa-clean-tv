@@ -1,5 +1,7 @@
 # The first hardware session
 
+English | [Español](05-first-hardware-session.es.md)
+
 Protocol for the first real cleanup session on the target TV (Toshiba
 50UV1553DB, VIDAA). Until this is done and logged, nothing in this repo is
 verified on that model. Do it with the remote, TV in front of you, about 15

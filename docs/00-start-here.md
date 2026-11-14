@@ -1,5 +1,7 @@
 # Start here: from "I have a VIDAA TV" to a first real action
 
+English | [Español](00-start-here.es.md)
+
 This page turns the rest of the documentation into a decision. Ten minutes
 of reading, then one concrete action you can reverse. Nothing here requires
 root, ADB, a firmware change or a purchase.
@@ -83,6 +85,7 @@ observing your own TV (route 3).
   model, and what remains unknown. If a page does not say it, it is not
   verified.
 
-Spanish entry points: [README en español](../README.es.md) and
-[preguntas frecuentes](../FAQ.es.md). The guides themselves are in English
-for now.
+Spanish entry points: [start here](00-start-here.es.md),
+[README en español](../README.es.md) and [preguntas frecuentes](../FAQ.es.md).
+Settings, the first session and feature compatibility also have Spanish guides;
+other technical guides and reports remain in English.
