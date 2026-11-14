@@ -165,14 +165,14 @@ def iter_queries(path):
 
 
 def load_blocklist(path):
-    """Load plain hostnames or AdGuard-format rules into a set of domains.
+    """Return {domain: include_subdomains}, preserving each rule's scope.
 
     Comment styles skipped: AdGuard '!', '#', '[' headers and '//' (the
     annotated format the upstream list currently uses). Only plain hostnames
     and unconditional ||hostname^ rules are supported, not filter options,
     exceptions or wildcard matching. Reject them rather than claim coverage.
     """
-    domains = set()
+    domains = {}
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         for lineno, line in enumerate(fh, 1):
             line = line.strip()
@@ -183,17 +183,18 @@ def load_blocklist(path):
             if not DOMAIN_RE.fullmatch(domain) or "*" in domain:
                 raise ValueError(f"Unsupported blocklist entry on line {lineno}: "
                                  "use plain hostnames or unconditional ||hostname^ rules")
-            domains.add(norm(domain))
+            domain = norm(domain)
+            domains[domain] = domains.get(domain, False) or m is not None
     return domains
 
 
 def is_blocked(domain, blocked):
-    """True if domain or any parent domain is on the blocklist."""
+    """Match exact plain hostnames and AdGuard rules with subdomain scope."""
+    if domain in blocked:
+        return True
     parts = domain.split(".")
-    for i in range(len(parts) - 1):
-        if ".".join(parts[i:]) in blocked:
-            return True
-    return False
+    return any(blocked.get(".".join(parts[i:]), False)
+               for i in range(1, len(parts) - 1))
 
 
 def main():
@@ -298,7 +299,7 @@ def run_cli():
         sys.exit("No DNS queries found. Check the input format (see --help).")
 
     try:
-        blocked = load_blocklist(args.blocklist) if args.blocklist else set()
+        blocked = load_blocklist(args.blocklist) if args.blocklist else {}
     except ValueError as e:
         sys.exit(str(e))
 

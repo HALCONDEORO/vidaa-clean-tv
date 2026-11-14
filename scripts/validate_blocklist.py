@@ -73,26 +73,30 @@ def run_cli():
         else:
             seen[domain] = lineno
 
-    # A rule for a subdomain adds nothing when its parent domain is already
-    # listed: ||example.com^ blocks the whole tree, and the classifier's
-    # comparison treats plain hostnames the same way.
+    # Only an AdGuard ||parent^ rule covers the whole tree. A plain hostname
+    # covers itself, not its subdomains (AdGuard DNS domains-only syntax).
+    tree_rules = {domain: lineno for lineno, raw, domain in rules
+                  if raw.startswith("||")}
     for lineno, raw, domain in rules:
         for parent in parent_domains(domain):
-            if parent in seen:
+            if parent in tree_rules:
                 errors.append(f"line {lineno}: redundant, already covered by "
-                              f"parent domain on line {seen[parent]}: {raw!r}")
+                              f"parent domain on line {tree_rules[parent]}: {raw!r}")
                 break
 
     if args.upstream:
         upstream_rules, upstream_errors = load_rules(args.upstream)
         errors.extend(f"upstream: {e}" for e in upstream_errors)
         upstream_domains = {domain for _, _, domain in upstream_rules}
+        upstream_trees = {domain for _, raw, domain in upstream_rules
+                          if raw.startswith("||")}
         for lineno, raw, domain in rules:
-            if domain in upstream_domains:
+            if (domain in upstream_trees or
+                    (not raw.startswith("||") and domain in upstream_domains)):
                 errors.append(f"line {lineno}: already covered by upstream: {raw!r}")
                 continue
             for parent in parent_domains(domain):
-                if parent in upstream_domains:
+                if parent in upstream_trees:
                     errors.append(f"line {lineno}: subdomain of an upstream rule, "
                                   f"already covered: {raw!r}")
                     break

@@ -242,12 +242,12 @@ class TestTimeline(TempFileMixin, unittest.TestCase):
 class TestBlocklist(TempFileMixin, unittest.TestCase):
     def test_load_adguard_and_plain(self):
         path = self.write_tmp(BLOCKLIST)
-        self.assertEqual(m.load_blocklist(path), {"ads.vidaa.com", "blocked.example.net"})
+        self.assertEqual(m.load_blocklist(path), {"ads.vidaa.com": True, "blocked.example.net": False})
 
     def test_load_skips_slash_comments(self):
         # The upstream annotated edition comments with '//', not '!'.
         path = self.write_tmp("//Title: annotated edition\n//Purpose: cleanup\nplain.example.net\n")
-        self.assertEqual(m.load_blocklist(path), {"plain.example.net"})
+        self.assertEqual(m.load_blocklist(path), {"plain.example.net": False})
 
     def test_unsupported_filter_semantics_are_not_silently_covered(self):
         unsupported = ["||example.com^$client=192.0.2.1", "@@||example.com^",
@@ -262,7 +262,7 @@ class TestBlocklist(TempFileMixin, unittest.TestCase):
     def test_supported_hostnames_normalize_case_and_root_dot(self):
         path = self.write_tmp("||API-EU.example.com.^\n_telemetry.example.net\n")
         self.assertEqual(m.load_blocklist(path),
-                         {"api-eu.example.com", "_telemetry.example.net"})
+                         {"api-eu.example.com": True, "_telemetry.example.net": False})
 
     def test_cli_rejects_options_without_partial_report_or_traceback(self):
         from unittest.mock import patch
@@ -277,8 +277,32 @@ class TestBlocklist(TempFileMixin, unittest.TestCase):
                 self.assertEqual(output.getvalue(), "")
                 self.assertIn("line 1", str(ctx.exception))
 
+    def test_plain_hostname_matches_only_itself(self):
+        blocked = m.load_blocklist(self.write_tmp("example.com\n"))
+        self.assertTrue(m.is_blocked("example.com", blocked))
+        self.assertFalse(m.is_blocked("ads.example.com", blocked))
+        self.assertFalse(m.is_blocked("notexample.com", blocked))
+
+    def test_adguard_scope_wins_regardless_of_duplicate_order(self):
+        for rules in ("example.com\n||example.com^\n",
+                      "||example.com^\nexample.com\n"):
+            with self.subTest(rules=rules):
+                blocked = m.load_blocklist(self.write_tmp(rules))
+                self.assertTrue(m.is_blocked("example.com", blocked))
+                self.assertTrue(m.is_blocked("ads.example.com", blocked))
+
+    def test_plain_parent_does_not_hide_cli_candidate(self):
+        log = self.write_tmp("example.com\nads.example.com\n")
+        blocklist = self.write_tmp("example.com\n")
+        from unittest.mock import patch
+        with patch.object(sys, "argv", ["classify_dns_log.py", log,
+                "--blocklist", blocklist, "--rules"]), redirect_stdout(io.StringIO()) as out:
+            m.main()
+        self.assertIn("||ads.example.com^", out.getvalue())
+        self.assertNotIn("||example.com^", out.getvalue())
+
     def test_exact_and_subdomain_match(self):
-        blocked = {"blocked.example.net"}
+        blocked = {"blocked.example.net": True}
         self.assertTrue(m.is_blocked("blocked.example.net", blocked))
         self.assertTrue(m.is_blocked("sub.blocked.example.net", blocked))
         self.assertFalse(m.is_blocked("notblocked.example.net", blocked))
@@ -382,12 +406,32 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
             self.run_validator([path])
         self.assertEqual(ctx.exception.code, 1)
 
-    def test_plain_parent_hostname_shadows_subdomain_rule(self):
-        # The classifier's comparison treats plain hostnames as covering
-        # their subdomains, so the validator flags the same redundancy.
+    def test_plain_parent_hostname_does_not_shadow_subdomain_rule(self):
         path = self.write_tmp("example.com\n||ads.example.com^\n")
+        self.run_validator([path])
+
+    def test_plain_upstream_parent_does_not_cover_subdomain(self):
+        mine = self.write_tmp("||ads.example.com^\n")
+        upstream = self.write_tmp("example.com\n")
+        self.run_validator([mine, "--upstream", upstream])
+
+    def test_plain_upstream_does_not_cover_adguard_tree_at_same_name(self):
+        mine = self.write_tmp("||example.com^\n")
+        upstream = self.write_tmp("example.com\n")
+        self.run_validator([mine, "--upstream", upstream])
+
+    def test_adguard_upstream_covers_plain_hostname(self):
+        mine = self.write_tmp("example.com\n")
+        upstream = self.write_tmp("||example.com^\n")
         with self.assertRaises(SystemExit) as ctx:
-            self.run_validator([path])
+            self.run_validator([mine, "--upstream", upstream])
+        self.assertEqual(ctx.exception.code, 1)
+
+    def test_plain_upstream_still_covers_exact_hostname(self):
+        mine = self.write_tmp("example.com\n")
+        upstream = self.write_tmp("example.com\n")
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_validator([mine, "--upstream", upstream])
         self.assertEqual(ctx.exception.code, 1)
 
     def test_subdomain_without_listed_parent_passes(self):
@@ -903,7 +947,7 @@ class TestEndToEndPipeline(TempFileMixin, unittest.TestCase):
             bl_path = self.write_tmp(
                 "// annotated edition\n||ads.vidaa.com^\nwww.youtube.com\n")
             blocked = m.load_blocklist(bl_path)
-            self.assertEqual(blocked, {"ads.vidaa.com", "www.youtube.com"})
+            self.assertEqual(blocked, {"ads.vidaa.com": True, "www.youtube.com": False})
 
             rows = [r for r in m.iter_queries(log_path) if r[1] == "192.168.1.50"]
             candidates = sorted({r[0] for r in rows if not m.is_blocked(r[0], blocked)})
