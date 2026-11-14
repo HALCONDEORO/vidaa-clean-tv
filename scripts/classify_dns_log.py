@@ -6,11 +6,11 @@ Part of VIDAA Clean TV. Standard library only, no network access.
 Accepted inputs (auto-detected):
   - AdGuard Home query log JSON export ({"data": [{"question": {"name": ...}, "client": ..., "reason": ...}, ...]})
   - Pi-hole FTL database (pihole-FTL.db, SQLite 'queries' table)
-  - dnsmasq log lines ('query[A] example.com from 192.168.1.10')
+  - dnsmasq log lines ('query[A] example.com from 192.0.2.10')
   - plain text, one domain per line
 
 Examples:
-  python3 classify_dns_log.py querylog.json --client 192.168.1.50 \
+  python3 classify_dns_log.py querylog.json --client 192.0.2.50 \
       --blocklist Blocked_Domains.txt --min-count 3
   python3 classify_dns_log.py dnsmasq.log --rules
 """

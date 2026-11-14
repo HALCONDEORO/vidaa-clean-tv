@@ -69,6 +69,8 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 | [docs/07-compatibility.md](docs/07-compatibility.md) | Choose a route by OS and feature, without borrowing another model's test result |
 | [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) | Protocol for the first real cleanup session |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | When something breaks or does not match the docs |
+| [SECURITY.md](SECURITY.md) | What to check before trusting a report or sharing logs |
+| [NOTICE.md](NOTICE.md) / [RELEASE.md](RELEASE.md) | Credits, versioning and release notes |
 
 ## What this project does NOT do
 
