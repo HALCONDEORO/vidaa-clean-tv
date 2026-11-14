@@ -64,8 +64,9 @@ Two things to know there:
 
 - Unticking the **VIDAA Account** consent signs you out of the account.
 - **Remove User Data**, in the same menu, deletes your stored usage data from
-  the TV and the cloud. That deletion cannot be undone, so read what it says
-  before confirming.
+  the TV and the cloud. That deletion cannot be undone, and this route does
+  not require it: skip it unless you have a specific reason, and read what it
+  says before confirming.
 
 ## 4. Hands-free voice (optional)
 

@@ -43,8 +43,9 @@ back. [The first hardware session protocol](05-first-hardware-session.md)
 explains why the log matters more than the outcome: your menus and firmware
 are the evidence other owners of your model need.
 
-The filled log converts to [TESTING.md](../TESTING.md) rows and to a
-shareable report with two offline commands:
+The filled log converts to [TESTING.md](../TESTING.md) rows (run the
+converter without `--json` for those) and to a shareable report with two
+offline commands:
 
 ```
 python3 scripts/session_to_testing.py your-log.md --json > your-report.json
