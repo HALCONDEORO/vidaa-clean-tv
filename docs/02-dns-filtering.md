@@ -110,7 +110,7 @@ Others exist; know their trade-offs before mixing:
 
 ## The supplement
 
-[blocklists/toshiba-uv1553db-supplement.txt](../blocklists/toshiba-uv1553db-supplement.txt)
+[blocklists/toshiba-uv1553db-supplement.txt](https://github.com/HALCONDEORO/vidaa-clean-tv/blob/main/blocklists/toshiba-uv1553db-supplement.txt)
 holds domains observed on our Toshiba that the upstream list misses. It starts
 empty on purpose: rules are added only from real DNS observations on the
 device, never guessed.

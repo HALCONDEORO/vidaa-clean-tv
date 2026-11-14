@@ -28,8 +28,8 @@ def parse_blocklist(text):
         line = raw.strip()
         if not line:
             continue
-        if line.startswith("!"):
-            candidate = line.lstrip("! ").strip()
+        if line.startswith("!") or line.startswith("#"):
+            candidate = line.lstrip("!# ").strip()
             domain = _extract_domain(candidate)
             if domain:
                 disabled.add(domain)
@@ -41,11 +41,18 @@ def parse_blocklist(text):
 
 
 def _extract_domain(line):
-    """Return the bare domain from a plain or ||domain^ rule, else None."""
+    """Return the bare domain from a plain or ||domain^ rule, else None.
+
+    Adblock options (``||domain^$client=...``) are rejected loudly instead
+    of being mangled into a literal fake domain: scoping rules change what
+    a line means, and guessing would falsify the diff.
+    """
     if line.startswith("||"):
         host = line[2:].rstrip("^").strip()
     else:
         host = line.strip()
+    if "$" in host:
+        raise ValueError("unsupported rule syntax: scoped Adblock options")
     if not host or " " in host or "/" in host:
         return None
     if "." not in host:

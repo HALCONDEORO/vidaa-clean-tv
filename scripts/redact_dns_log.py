@@ -14,6 +14,7 @@ import sys
 
 from classify_dns_log import DOMAIN_RE, norm
 from fetch_query_log import write_private_export
+from validate_model_report import no_duplicate_keys
 
 
 def redact(data):
@@ -47,7 +48,9 @@ def main():
                 or (os.path.exists(args.output) and os.path.samefile(args.input, args.output))):
             parser.exit(1, "Refusing to overwrite the original export. Choose another output.\n")
         with open(args.input, encoding="utf-8") as stream:
-            data = json.load(stream)
+            # Reject duplicate keys instead of letting the last one win:
+            # a malformed export must fail loudly, never lose records silently.
+            data = json.load(stream, object_pairs_hook=no_duplicate_keys)
         output = redact(data)
         write_private_export(args.output, output)
     except (OSError, ValueError, RecursionError):

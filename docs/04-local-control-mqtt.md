@@ -35,7 +35,7 @@ session would check, not instructions we have watched work.
    as the TV, with the ha_vidaatv integration downloaded but not yet paired.
 2. Physical access to the TV: pairing shows a PIN on the TV screen that must
    be typed into the client. There is no headless pairing.
-3. A filled copy of the [session log template](templates/session-log.md) with
+3. A filled copy of the [session log template](https://github.com/HALCONDEORO/vidaa-clean-tv/blob/main/docs/templates/session-log.md) with
    `session_type: local-control`, so every probe lands as a structured row.
 4. The TV's current settings photographed or noted, so anything that changes
    can be reverted.
@@ -59,9 +59,10 @@ the same model and firmware.
 
 - Any device on the local network that completes PIN pairing can send remote
   keys until unpaired. Note who paired and when, and unpair when done.
-- MQTT traffic is local; this interface neither needs nor gets internet
-  access in this design. DNS filtering from [route 2](02-dns-filtering.md)
-  does not block it.
+- MQTT traffic is local by design, on a separate route from DNS. DNS
+  filtering from [route 2](02-dns-filtering.md) is not expected to interact
+  with it, but that interaction is untested on a real TV; record what you
+  see in the session log.
 - Firmware updates can change or remove the interface; the session log must
   record the firmware version every time.
 

@@ -62,6 +62,22 @@ class TestRedactor(unittest.TestCase):
                 self.invoke(source, source)
             self.assertEqual(source.read_bytes(), before)
 
+    def test_duplicate_keys_rejected_without_echoing_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "dup.json"
+            output = Path(directory) / "share.json"
+            source.write_text(
+                '{"data": [{"question": {"name": "secret-host.example.net"}, '
+                '"question": {"name": "other-host.example.net"}, "reason": "Filtered"}]}'
+            )
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit) as ctx:
+                self.invoke(source, output)
+            self.assertEqual(ctx.exception.code, 1)
+            self.assertNotIn("secret-host", stderr.getvalue())
+            self.assertNotIn("other-host", stderr.getvalue())
+            self.assertFalse(output.exists())
+
     def test_alias_paths_cannot_overwrite_original(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "private.json"

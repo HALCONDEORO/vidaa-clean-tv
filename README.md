@@ -102,4 +102,4 @@ Nothing here is claimed as tested on a specific model until it appears in [TESTI
 
 ## License
 
-MIT for original content (see LICENSE). Third-party projects keep their own licenses (see NOTICE.md).
+MIT for original content (see [LICENSE](https://github.com/HALCONDEORO/vidaa-clean-tv/blob/main/LICENSE)). Third-party projects keep their own licenses (see NOTICE.md).

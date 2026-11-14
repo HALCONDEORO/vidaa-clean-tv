@@ -100,7 +100,7 @@ Las herramientas usan la biblioteca estándar de Python. CI comprueba las
 pruebas en Python 3.10-3.14, los enlaces y el suplemento frente a la lista
 original. Los requisitos para contribuir están en [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Contenido original bajo [MIT](LICENSE). Cada proyecto externo conserva su licencia.
+Contenido original bajo [MIT](https://github.com/HALCONDEORO/vidaa-clean-tv/blob/main/LICENSE). Cada proyecto externo conserva su licencia.
 
 ## Mantenimiento de esta versión
 
