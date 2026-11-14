@@ -1,0 +1,23 @@
+title: VIDAA Clean TV
+description: >-
+  Privacy settings and DNS filtering guidance for smart TVs running VIDAA,
+  with offline tools to inspect DNS logs. No root, no firmware changes.
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-titles-from-headings
+show_downloads: false
+
+# Working files, data and code are not site pages.
+exclude:
+  - docs/templates/
+  - scripts/
+  - examples/
+  - blocklists/
+  - .github/
+  - .deepsource.toml
+  - Gemfile
+  - Gemfile.lock
+  - LICENSE

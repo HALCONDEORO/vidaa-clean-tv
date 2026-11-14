@@ -72,6 +72,8 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 | [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) | Protocol for the first real cleanup session |
 | [docs/08-app-compatibility.md](docs/08-app-compatibility.md) | Per-app compatibility matrix: reported status, setup and limits, never a guarantee |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | When something breaks or does not match the docs |
+| [SECURITY.md](SECURITY.md) | What to check before trusting a report or sharing logs |
+| [NOTICE.md](NOTICE.md) / [RELEASE.md](RELEASE.md) | Credits, versioning and release notes |
 
 ## What this project does NOT do
 

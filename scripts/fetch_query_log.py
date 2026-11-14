@@ -6,7 +6,7 @@ network: it talks only to the AdGuard Home address you give it, with the
 admin credentials of your own installation.
 
 Example:
-  python3 fetch_query_log.py --host http://192.168.1.10:3000 \
+  python3 fetch_query_log.py --host http://192.0.2.10:3000 \
       --user admin --limit 500 -o querylog.json
 
 AdGuard Home's API accepts any --limit (its default page is 500 entries and
@@ -143,7 +143,7 @@ def write_private_export(path, data):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--host", required=True, help="AdGuard Home base URL, e.g. http://192.168.1.10:3000")
+    ap.add_argument("--host", required=True, help="AdGuard Home base URL, e.g. http://192.0.2.10:3000")
     ap.add_argument("--user", required=True, help="AdGuard Home admin username")
     ap.add_argument("--limit", type=int, default=500, help="Max entries per page (default: 500, max: 10000)")
     ap.add_argument("--pages", type=int, default=1,

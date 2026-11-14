@@ -49,16 +49,16 @@ search shows up in normal browsing too, which is how you avoid breaking
 the home screen.
 
 ```sh
-python3 scripts/fetch_query_log.py --host http://192.168.1.10:3000 \
+python3 scripts/fetch_query_log.py --host http://192.0.2.10:3000 \
     --user admin --pages 10 -o querylog.json
 python3 scripts/classify_dns_log.py querylog.json \
-    --client 192.168.1.50 \
+    --client 192.0.2.50 \
     --blocklist Blocked_Domains.txt \
     --min-count 3 --rules
 
 # Pi-hole: same command on a copy of the FTL database
 python3 scripts/classify_dns_log.py pihole-FTL.db \
-    --client 192.168.1.50 \
+    --client 192.0.2.50 \
     --blocklist Blocked_Domains.txt \
     --min-count 3 --rules
 ```
@@ -67,7 +67,7 @@ To see *when* the TV is most active, run a separate command with `--timeline` (b
 default 60). It prints per-bucket counts split into filtered and unblocked:
 
 ```sh
-python3 scripts/classify_dns_log.py querylog.json --client 192.168.1.50 --timeline
+python3 scripts/classify_dns_log.py querylog.json --client 192.0.2.50 --timeline
 ```
 
 Timestamps exist in AdGuard Home JSON exports and in Pi-hole FTL
