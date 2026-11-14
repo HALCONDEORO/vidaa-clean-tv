@@ -38,7 +38,7 @@ Rules that keep the log useful and safe to share:
     {
       "app": "YouTube",
       "status": "works | broken | untested",
-      "notes": "Optional, e.g. ads gone, playback fine"
+      "notes": "Required, e.g. 'Playback fine' or 'Not tested'"
     }
   ],
   "outcome": "Free summary: what changed overall, anything you reverted, open questions"
@@ -60,8 +60,9 @@ Field reference:
 - `steps` (required, at least one): the heart of the log. `reverted` is `yes`
   or `no`.
 - `apps` (optional): streaming apps you checked after filtering, with
-  `status` one of `works`, `broken`, `untested`. Never mark an app `works`
-  without having opened it in this session.
+  `status` one of `works`, `broken`, `untested` and a non-empty `notes`
+  field (write `Not tested` when that is the truth). Never mark an app
+  `works` without having opened it in this session.
 - `outcome` (optional): short free-text summary.
 
 The converter prints Markdown rows you can paste into the session-log table in

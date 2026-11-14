@@ -21,9 +21,25 @@ import re
 import sys
 
 REQUIRED_FIELDS = ("model", "region", "session_date", "firmware", "menus", "steps")
+# session_type is accepted in the template for human context; the
+# normalized report drops it because the shared schema has no such field.
+ALLOWED_FIELDS = set(REQUIRED_FIELDS) | {"apps", "outcome", "session_type"}
 REVERTED_VALUES = ("yes", "no")
 APP_STATUS_VALUES = ("works", "broken", "untested")
 SESSION_TYPES = ("settings", "dns-filtering", "local-control", "mixed")
+MAX_LIST_ITEMS = 100
+MAX_FIELD_CHARS = 120
+MAX_FREE_CHARS = 2000
+
+
+def _no_duplicates(pairs):
+    """object_pairs_hook that rejects duplicate JSON keys."""
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValidationError("duplicate JSON key: %s" % key)
+        result[key] = value
+    return result
 
 # Patterns that would leak private or machine-identifying data into a
 # shareable log. Keep in sync with scripts/validate_model_report.py.
@@ -50,7 +66,7 @@ def extract_json_block(text):
     if not match:
         raise ValidationError("no ```json fenced block found in the file")
     try:
-        return json.loads(match.group(1))
+        return json.loads(match.group(1), object_pairs_hook=_no_duplicates)
     except json.JSONDecodeError as exc:
         raise ValidationError("the JSON block does not parse: %s" % exc)
 
@@ -72,14 +88,23 @@ def validate_report(report):
     """Validate the shared model-report shape. Raises ValidationError."""
     if not isinstance(report, dict):
         raise ValidationError("the JSON block must be an object")
+    unknown = set(report) - ALLOWED_FIELDS
+    if unknown:
+        raise ValidationError("unknown fields: %s" % ", ".join(sorted(unknown)))
     for field in REQUIRED_FIELDS:
         value = report.get(field)
         if value in (None, "", []):
             raise ValidationError("missing required field: %s" % field)
     if not isinstance(report["model"], str) or not (3 <= len(report["model"]) <= 60):
         raise ValidationError("model must be a string of 3-60 characters")
-    if not isinstance(report["region"], str) or not report["region"].strip():
-        raise ValidationError("region must be a non-empty string")
+    if (
+        not isinstance(report["region"], str)
+        or not report["region"].strip()
+        or len(report["region"]) > MAX_FIELD_CHARS
+    ):
+        raise ValidationError(
+            "region must be a non-empty string of at most %d characters" % MAX_FIELD_CHARS
+        )
     date = report["session_date"]
     if not isinstance(date, str) or not DATE_RE.match(date):
         raise ValidationError("session_date must be YYYY-MM-DD")
@@ -89,12 +114,20 @@ def validate_report(report):
         raise ValidationError("session_date is not a real date: %s" % date)
     if parsed > datetime.date.today():
         raise ValidationError("session_date is in the future: %s" % date)
-    if not isinstance(report["firmware"], str) or not report["firmware"].strip():
-        raise ValidationError("firmware must be a non-empty string")
+    if (
+        not isinstance(report["firmware"], str)
+        or not report["firmware"].strip()
+        or len(report["firmware"]) > MAX_FIELD_CHARS
+    ):
+        raise ValidationError(
+            "firmware must be a non-empty string of at most %d characters" % MAX_FIELD_CHARS
+        )
     if not isinstance(report["menus"], list) or not all(
-        isinstance(m, str) and m.strip() for m in report["menus"]
+        isinstance(m, str) and m.strip() and len(m) <= MAX_FREE_CHARS for m in report["menus"]
     ):
         raise ValidationError("menus must be a list of non-empty strings")
+    if len(report["menus"]) > MAX_LIST_ITEMS:
+        raise ValidationError("menus has too many entries (max %d)" % MAX_LIST_ITEMS)
     session_type = report.get("session_type")
     if session_type is not None and session_type not in SESSION_TYPES:
         raise ValidationError(
@@ -103,6 +136,8 @@ def validate_report(report):
     steps = report["steps"]
     if not isinstance(steps, list) or not steps:
         raise ValidationError("steps must be a non-empty list")
+    if len(steps) > MAX_LIST_ITEMS:
+        raise ValidationError("steps has too many entries (max %d)" % MAX_LIST_ITEMS)
     for index, step in enumerate(steps):
         if not isinstance(step, dict):
             raise ValidationError("steps[%d] must be an object" % index)
@@ -116,16 +151,31 @@ def validate_report(report):
     apps = report.get("apps", [])
     if not isinstance(apps, list):
         raise ValidationError("apps must be a list")
+    if len(apps) > MAX_LIST_ITEMS:
+        raise ValidationError("apps has too many entries (max %d)" % MAX_LIST_ITEMS)
     for index, app in enumerate(apps):
         if not isinstance(app, dict):
             raise ValidationError("apps[%d] must be an object" % index)
-        if not isinstance(app.get("app"), str) or not app["app"].strip():
-            raise ValidationError("apps[%d].app must be a non-empty string" % index)
-        if app.get("status") not in APP_STATUS_VALUES:
+        for key in ("app", "status", "notes"):
+            if not isinstance(app.get(key), str) or not app[key].strip():
+                raise ValidationError(
+                    "apps[%d].%s must be a non-empty string (use 'Not tested' for untested)"
+                    % (index, key)
+                )
+        if len(app["app"]) > MAX_FIELD_CHARS:
+            raise ValidationError("apps[%d].app is too long" % index)
+        if app["status"] not in APP_STATUS_VALUES:
             raise ValidationError(
                 "apps[%d].status must be one of: %s"
                 % (index, ", ".join(APP_STATUS_VALUES))
             )
+    outcome = report.get("outcome")
+    if outcome is not None and (
+        not isinstance(outcome, str) or len(outcome) > MAX_FREE_CHARS
+    ):
+        raise ValidationError(
+            "outcome must be a string of at most %d characters" % MAX_FREE_CHARS
+        )
     _check_no_private_data(report)
     return report
 
@@ -156,6 +206,8 @@ def to_testing_rows(report):
 
 def to_normalized_report(report):
     """Return the normalized report for validate_model_report.py."""
+    # session_type is human context for the log file only; the shared
+    # model-report schema has no such field and validators reject unknowns.
     normalized = {
         "model": report["model"].strip(),
         "region": report["region"].strip(),
@@ -172,8 +224,6 @@ def to_normalized_report(report):
             for s in report["steps"]
         ],
     }
-    if report.get("session_type"):
-        normalized["session_type"] = report["session_type"]
     if report.get("apps"):
         normalized["apps"] = report["apps"]
     if report.get("outcome"):

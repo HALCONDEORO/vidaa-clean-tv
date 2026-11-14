@@ -35,7 +35,7 @@ VALID_REPORT = {
     ],
     "apps": [
         {"app": "YouTube", "status": "works", "notes": "Playback fine"},
-        {"app": "Netflix", "status": "untested", "notes": ""},
+        {"app": "Netflix", "status": "untested", "notes": "Not tested"},
     ],
     "outcome": "Ads reduced on home screen; no app breakage seen",
 }
@@ -88,9 +88,36 @@ class ValidateTests(unittest.TestCase):
 
     def test_bad_app_status_fails(self):
         report = dict(VALID_REPORT)
-        report["apps"] = [{"app": "YouTube", "status": "fine", "notes": ""}]
+        report["apps"] = [{"app": "YouTube", "status": "fine", "notes": "x"}]
         with self.assertRaises(stt.ValidationError):
             stt.validate_report(report)
+
+    def test_empty_app_notes_fails(self):
+        report = dict(VALID_REPORT)
+        report["apps"] = [{"app": "Netflix", "status": "untested", "notes": ""}]
+        with self.assertRaises(stt.ValidationError):
+            stt.validate_report(report)
+
+    def test_unknown_field_fails(self):
+        report = dict(VALID_REPORT, internal_id="abc")
+        with self.assertRaises(stt.ValidationError):
+            stt.validate_report(report)
+
+    def test_duplicate_json_key_fails(self):
+        text = '{"model": "A", "model": "B"}'
+        with self.assertRaises(stt.ValidationError):
+            stt.extract_json_block("```json\n" + text + "\n```\n")
+
+    def test_oversized_lists_fail(self):
+        report = dict(VALID_REPORT)
+        report["menus"] = ["Settings > x"] * 101
+        with self.assertRaises(stt.ValidationError):
+            stt.validate_report(report)
+
+    def test_session_type_allowed_but_dropped_from_normalized(self):
+        report = stt.validate_report(dict(VALID_REPORT))
+        normalized = stt.to_normalized_report(report)
+        self.assertNotIn("session_type", normalized)
 
     def test_bad_session_type_fails(self):
         report = dict(VALID_REPORT, session_type="everything")
