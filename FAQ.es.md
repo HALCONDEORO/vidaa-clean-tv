@@ -3,8 +3,8 @@
 [English](FAQ.md) | [Inicio en español](README.es.md)
 
 Estas respuestas distinguen lo comunicado por otras personas de lo registrado
-en el proyecto. No se han hecho pruebas nuevas para esta traducción. Las guías
-detalladas enlazadas siguen en inglés.
+en el proyecto. No se han hecho pruebas nuevas para esta traducción. Las guías de ajustes, primera sesión y compatibilidad por función también
+están en español; otras guías técnicas e informes siguen en inglés.
 
 ## ¿Los televisores VIDAA muestran anuncios?
 
@@ -17,7 +17,7 @@ región y el firmware; no todas las pantallas se comportan igual.
 
 No hay un interruptor que lo elimine todo.
 
-- La [ruta de ajustes](docs/01-on-device-settings.md) documenta opciones de
+- La [ruta de ajustes](docs/01-on-device-settings.es.md) documenta opciones de
   personalización, consentimiento y reconocimiento de contenido. Sus efectos
   todavía requieren comprobación en cada televisor.
 - El [filtrado DNS](docs/02-dns-filtering.md) puede reducir promociones y
@@ -47,7 +47,7 @@ solo todo el contenido que transmite ni demuestra que haya dejado de recoger dat
 No con este proyecto. Aquí solo cubrimos ajustes normales y filtrado DNS.
 Hay Hisense con Android y proyectos separados de cambios nativos en VIDAA,
 pero eso no los convierte en métodos admitidos aquí. Identifica primero el
-sistema y la función en la [guía de compatibilidad](docs/07-compatibility.md).
+sistema y la función en la [guía de compatibilidad](docs/07-compatibility.es.md).
 
 ## ¿Puede dejar de funcionar YouTube, Netflix o Prime Video?
 
@@ -78,8 +78,9 @@ un número mayor de bloqueos. Observa primero el resultado de una lista.
 
 ## ¿Por qué hay páginas en inglés?
 
-Esta primera versión española cubre la entrada y las preguntas frecuentes.
-Las guías técnicas y los informes siguen en inglés. Esta página se revisó
+La versión española cubre la entrada, las preguntas frecuentes, los ajustes,
+la primera sesión y la compatibilidad por función. Otras guías técnicas y
+los informes siguen en inglés. Esta página se revisó
 frente a FAQ.md de `46ec5d1`, 14 de noviembre de 2026. Las actualizaciones de
 pasos, riesgos y pruebas deben revisar ambas versiones; una traducción no
 convierte una afirmación pendiente en un resultado probado.

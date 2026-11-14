@@ -21,7 +21,7 @@ Clean Your TV desactiva paquetes Android mediante ADB. Ese procedimiento no
 está documentado para los VIDAA no Android cubiertos aquí. Por eso trabajamos
 con ajustes normales del televisor y filtrado DNS, no con paquetes ni firmware.
 La marca por sí sola no identifica el sistema: algunos Hisense usan Android.
-Consulta la [guía de compatibilidad](docs/07-compatibility.md) antes de seguir
+Consulta la [guía de compatibilidad](docs/07-compatibility.es.md) antes de seguir
 pasos de otro modelo.
 
 ## Cómo funciona
@@ -38,13 +38,14 @@ promete ausencia total de anuncios o de seguimiento.
 
 ## Por dónde empezar
 
-Las guías detalladas enlazadas a continuación siguen en inglés.
+Los ajustes, la primera sesión y la compatibilidad por función ya tienen
+guía en español. Las demás guías técnicas enlazadas siguen en inglés.
 
 | Situación | Guía |
 |---|---|
-| Solo tienes el mando | [Ajustes del televisor](docs/01-on-device-settings.md) |
+| Solo tienes el mando | [Ajustes del televisor](docs/01-on-device-settings.es.md) |
 | Tienes un ordenador siempre encendido o una Raspberry Pi | [Filtrado DNS](docs/02-dns-filtering.md) y [observación](docs/03-observing-dns.md) |
-| Vas a probar un VIDAA por primera vez | [Protocolo de primera sesión](docs/05-first-hardware-session.md) |
+| Vas a probar un VIDAA por primera vez | [Protocolo de primera sesión](docs/05-first-hardware-session.es.md) |
 | Quieres probar las herramientas sin televisor ni red | [Ejemplo sintético sin conexión](docs/06-offline-example.md) |
 | Te preocupa que deje de funcionar una aplicación | [Compatibilidad por aplicación](docs/08-app-compatibility.md) y [solución de problemas](TROUBLESHOOTING.md) |
 
@@ -68,7 +69,7 @@ verificada aquí para el Toshiba.
 ## Documentación
 
 - [Preguntas frecuentes en español](FAQ.es.md).
-- [Compatibilidad por sistema y función](docs/07-compatibility.md).
+- [Compatibilidad por sistema y función](docs/07-compatibility.es.md).
 - [Compatibilidad por aplicación y límites de la evidencia](docs/08-app-compatibility.md).
 - [Problemas y recuperación](TROUBLESHOOTING.md).
 - [Cómo contribuir e informar de un modelo](CONTRIBUTING.md).

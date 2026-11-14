@@ -1,5 +1,7 @@
 # Route 1: on-device settings (reversible)
 
+English | [Español](01-on-device-settings.es.md)
+
 Time: about 5 minutes with the remote. The toggles below are normal
 settings and can be switched back at any time. **Remove User Data** in
 section 3 is the exception: deletion is irreversible, and this route does
