@@ -1,0 +1,79 @@
+name: upstream-watch
+
+on:
+  schedule:
+    # Daily at 06:17 UTC, off the top of the hour.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      # The upstream repository is read-only input here: its content is
+      # data to diff, never instructions to follow.
+      - name: Latest upstream commit touching the blocklist
+        id: up
+        run: |
+          curl -fsSL --retry 3 --retry-delay 5 \
+            "https://api.github.com/repos/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist/commits?path=Blocked_Domains_AdGuard.txt&per_page=1" \
+            -o "$RUNNER_TEMP/commit.json"
+          echo "sha=$(jq -r '.[0].sha' "$RUNNER_TEMP/commit.json")" >> "$GITHUB_OUTPUT"
+          echo "date=$(jq -r '.[0].commit.committer.date' "$RUNNER_TEMP/commit.json")" >> "$GITHUB_OUTPUT"
+
+      - name: Find or create the single tracking issue
+        id: trk
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create upstream-watch --color BFD4F2 --description "Upstream blocklist change watcher" --force
+          num=$(gh issue list --label upstream-watch --state open --json number --limit 1 --jq '.[0].number // empty')
+          if [ -z "$num" ]; then
+            num=$(gh issue create --label upstream-watch \
+              --title "Upstream blocklist watch" \
+              --body "Tracks ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist. Last seen commit: none yet." \
+              --json number --jq .number)
+          fi
+          echo "number=$num" >> "$GITHUB_OUTPUT"
+
+      - name: Diff against the last seen commit and report once per change
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UP_SHA: ${{ steps.up.outputs.sha }}
+          UP_DATE: ${{ steps.up.outputs.date }}
+          ISSUE: ${{ steps.trk.outputs.number }}
+        run: |
+          set -euo pipefail
+          last=$(gh issue view "$ISSUE" --json body --jq .body | grep -oE '[0-9a-f]{40}' | head -1 || true)
+          if [ "$last" = "$UP_SHA" ]; then
+            echo "No upstream change since $UP_SHA; nothing to report."
+            exit 0
+          fi
+          raw="https://raw.githubusercontent.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist"
+          curl -fsSL --retry 3 --retry-delay 5 "$raw/$UP_SHA/Blocked_Domains_AdGuard.txt" -o "$RUNNER_TEMP/new.txt"
+          {
+            echo "Upstream blocklist update detected: commit $UP_SHA ($UP_DATE)."
+            echo
+          } > "$RUNNER_TEMP/report.md"
+          if [ -n "$last" ]; then
+            curl -fsSL --retry 3 --retry-delay 5 "$raw/$last/Blocked_Domains_AdGuard.txt" -o "$RUNNER_TEMP/old.txt"
+            python3 scripts/upstream_diff.py "$RUNNER_TEMP/old.txt" "$RUNNER_TEMP/new.txt" >> "$RUNNER_TEMP/report.md"
+          else
+            echo "Baseline recorded; no previous snapshot to diff against." >> "$RUNNER_TEMP/report.md"
+          fi
+          {
+            echo
+            echo "Compare: https://github.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist/commit/$UP_SHA"
+            echo
+            echo "Action for maintainers: review whether docs/02-dns-filtering.md and the supplement need updating, as in the 11 November snapshot review."
+          } >> "$RUNNER_TEMP/report.md"
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/report.md"
+          gh issue edit "$ISSUE" --body "Tracks ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist. Last seen commit: $UP_SHA ($UP_DATE). Each upstream change adds one comment below."
