@@ -43,11 +43,19 @@ back. [The first hardware session protocol](05-first-hardware-session.md)
 explains why the log matters more than the outcome: your menus and firmware
 are the evidence other owners of your model need.
 
-The filled log converts to [TESTING.md](../TESTING.md) rows with
-`python3 scripts/session_to_testing.py your-log.md`, and
-`python3 scripts/validate_model_report.py` checks a report before you share
-it. Both run fully offline and refuse IP addresses, MAC addresses, emails
-and other identifiers in the data they inspect.
+The filled log converts to [TESTING.md](../TESTING.md) rows and to a
+shareable report with two offline commands:
+
+```
+python3 scripts/session_to_testing.py your-log.md --json > your-report.json
+python3 scripts/validate_model_report.py your-report.json
+```
+
+The validator rejects common identifier patterns (IP and MAC addresses,
+emails, local hostnames, exact times, long hex tokens) in the JSON report
+it inspects. That is a pattern check, not anonymization: it does not cover
+every kind of personal data, and it never looks at the prose around the
+JSON block. Review all text and photos yourself before sharing anything.
 
 ## Step 4 - Check your own rules before relying on them
 
@@ -66,7 +74,8 @@ observing your own TV (route 3).
 
 ## What this site will never ask of you
 
-- No account, no cookies, no analytics: this is a static documentation site.
+- No account and no sign-in. We add no analytics or tracking scripts; the
+  site is static documentation hosted by GitHub Pages.
 - No service menu, root, ADB or firmware change.
 - No purchase or subscription. The tools are offline Python scripts.
 - No blind trust: every page states what is verified, by whom, on which
