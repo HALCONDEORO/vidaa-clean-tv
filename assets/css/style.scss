@@ -1,0 +1,23 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* Small screens: show the tagged route tables as stacked cards so no
+   column is hidden behind horizontal scrolling. */
+@media (max-width: 600px) {
+  .main-content table.responsive-cards thead { display: none; }
+  .main-content table.responsive-cards tr {
+    display: block;
+    margin-bottom: 0.9em;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.5em 0.7em;
+  }
+  .main-content table.responsive-cards td {
+    display: block;
+    border: none;
+    padding: 0.15em 0;
+  }
+  .main-content table.responsive-cards td:first-child { font-weight: 700; }
+}
