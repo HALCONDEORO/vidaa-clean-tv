@@ -1,6 +1,8 @@
 # TV model pages
 
-One page per VIDAA model, built from first-session reports. What a report
+One page per VIDAA model, built from first-session reports. Start with the
+[compatibility guide](../07-compatibility.md) to separate OS identification
+from evidence that a particular feature works. What a report
 needs is in [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 | Model | Page | Verified on that device |

@@ -10,11 +10,11 @@ Documented privacy settings and DNS filtering guidance for smart TVs running VID
 
 ## Why a separate project
 
-Clean Your TV and similar tools disable packages over ADB. VIDAA has no ADB, no sideloading and no reachable package list, so that approach cannot be ported: [Clean Your TV's Hisense compatibility page](https://cleanyourtv.wiki/tv/hisense/) lists sets running VIDAA OS as not covered because the tool needs Android, and the [justatv.eu VIDAA guide](https://justatv.eu/en/guides/cleaning-up-a-hisense-television-with-vidaa) reaches the same conclusion - with no ADB on VIDAA, cleanup means settings and network filtering, not package tools. A port would not be an adaptation, it would be a different tool. This is that tool.
+Clean Your TV and similar tools disable Android packages over ADB. That route is not documented for the non-Android VIDAA sets covered here: [Clean Your TV's Hisense compatibility page](https://cleanyourtv.wiki/tv/hisense/) lists sets running VIDAA OS as not covered because the tool needs Android, and the [justatv.eu VIDAA guide](https://justatv.eu/en/guides/cleaning-up-a-hisense-television-with-vidaa) reaches the same conclusion - with no ADB on VIDAA, cleanup means settings and network filtering, not package tools. This project takes the settings-and-DNS route instead. This scope is not a claim that every TV sold with VIDAA branding has the same internals; see the [compatibility guide](docs/07-compatibility.md).
 
 ## How it works
 
-VIDAA sets have no debug bridge, so the cleanup happens where the system does allow it: in the TV's own settings and on the network the TV talks to.
+This project works through the TV's own settings and the network it talks to. It does not use a debug bridge or modify the TV's software.
 
 | Step | What happens |
 |---|---|
@@ -66,12 +66,13 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 | [docs/02-dns-filtering.md](docs/02-dns-filtering.md) | Route 2: DNS filtering setup, options and honest warnings |
 | [docs/03-observing-dns.md](docs/03-observing-dns.md) | Route 3: observing DNS and building your own rules |
 | [docs/04-local-control-mqtt.md](docs/04-local-control-mqtt.md) | Note on the local MQTT control interface |
+| [docs/07-compatibility.md](docs/07-compatibility.md) | Choose a route by OS and feature, without borrowing another model's test result |
 | [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) | Protocol for the first real cleanup session |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | When something breaks or does not match the docs |
 
 ## What this project does NOT do
 
-- No ADB, no APK sideloading, no launcher replacement, no package disabling. VIDAA does not offer any of these.
+- No ADB, APK sideloading, launcher replacement or package disabling in this project. Reports of a separate model-specific modification are not compatibility evidence for these guides.
 - No firmware modification, no factory or service menus, no rooting. Those risk bricking the set and voiding the warranty.
 - No invented APIs. Every step is either a documented on-device setting or standard network administration.
 

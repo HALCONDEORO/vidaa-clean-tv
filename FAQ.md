@@ -43,9 +43,12 @@ take anyone's word for it, including ours.
 
 ## Can I root it, install a launcher, or use ADB?
 
-No. VIDAA has no ADB, no sideloading and no package management. That is why
-this project works only with reversible settings and network-level
-filtering, and why everything here can be undone.
+Not with this project. It covers reversible settings and DNS filtering,
+not rooting, launcher changes or package management. Some Hisense sets run
+Android, and separate community projects describe model-specific native
+VIDAA changes. Neither makes those methods supported here. Use the
+[compatibility guide](docs/07-compatibility.md) to distinguish the OS and
+the feature before following instructions from another project.
 
 ## Will blocking break YouTube, Netflix or Prime Video?
 

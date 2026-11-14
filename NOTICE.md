@@ -28,5 +28,15 @@ This project is original work, built on public research by others:
 - **VIDAA OS privacy policy** - official description of the Enhanced Viewing
   Service / ACR opt-out. https://www.vidaa.com/os-privacy-policy/
 
+- **OliverS45/vidaa-clean-tv** (MIT License) - owner-reported Hisense 65A67H
+  DNS session and setup troubleshooting, already imported with authorship in
+  PR #31; used as compatibility evidence, not a new hardware test.
+  https://github.com/OliverS45/vidaa-clean-tv
+- **nineodernein/hisense-vidaa-clean-home** - documentation source for the
+  distinction between its reported model-specific native Home trial and its
+  generalized public package. Referenced for scope only; no code or device
+  files copied and no native modification supported here.
+  https://github.com/nineodernein/hisense-vidaa-clean-home
+
 "VIDAA" and "Hisense" are trademarks of their respective owners. This is an
 independent community project, not affiliated with or endorsed by them.
