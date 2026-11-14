@@ -588,6 +588,58 @@ class TestFetchQueryLogHelpers(unittest.TestCase):
         handler = fql._NoRedirect()
         self.assertIsNone(handler.redirect_request(None, None, 302, "Found", {}, "http://evil.example/"))
 
+    def test_fetch_page_ignores_environment_proxies(self):
+        # Only synthetic credentials and loopback servers. An inherited proxy
+        # must not receive the AdGuard admin Authorization header or query log.
+        import http.server, threading
+        from unittest.mock import patch
+
+        received = {"target": [], "proxy": []}
+
+        def handler_for(role):
+            class Handler(http.server.BaseHTTPRequestHandler):
+                def do_GET(self):
+                    received[role].append((self.path, self.headers.get("Authorization")))
+                    body = json.dumps({"data": [], "source": role}).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, *args):
+                    pass
+            return Handler
+
+        target = http.server.HTTPServer(("127.0.0.1", 0), handler_for("target"))
+        proxy = http.server.HTTPServer(("127.0.0.1", 0), handler_for("proxy"))
+        servers = (target, proxy)
+        threads = [threading.Thread(target=s.serve_forever, daemon=True) for s in servers]
+        for thread in threads:
+            thread.start()
+        try:
+            proxy_url = f"http://127.0.0.1:{proxy.server_port}"
+            for spelling in ("http_proxy", "HTTP_PROXY"):
+                with self.subTest(variable=spelling), patch.dict(os.environ, {
+                        spelling: proxy_url, "https_proxy": proxy_url,
+                        "HTTPS_PROXY": proxy_url, "all_proxy": proxy_url,
+                        "ALL_PROXY": proxy_url, "no_proxy": "", "NO_PROXY": "",
+                        }, clear=True):
+                    result = fql.fetch_page(f"http://127.0.0.1:{target.server_port}",
+                                            "synthetic-user", "synthetic-password", 2)
+                    self.assertEqual(received["proxy"], [])
+                    self.assertEqual(result["source"], "target")
+            self.assertEqual(len(received["target"]), 2)
+            for path, authorization in received["target"]:
+                self.assertEqual(path, "/control/querylog?limit=2&offset=0")
+                self.assertEqual(authorization,
+                                 fql.basic_auth_header("synthetic-user", "synthetic-password"))
+        finally:
+            for server in servers:
+                server.shutdown()
+                server.server_close()
+            for thread in threads:
+                thread.join(timeout=2)
+
     def test_fetch_page_rejects_non_http_scheme(self):
         with self.assertRaises(ValueError):
             fql.fetch_page("file:///etc/passwd", "u", "p", 10)
