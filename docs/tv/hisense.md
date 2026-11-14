@@ -5,6 +5,10 @@ people's published work. One owner-reported DNS session on a Hisense 65A67H is
 logged in [../../TESTING.md](../../TESTING.md); nothing else has been tested
 on a Hisense set here.
 
+Use the [compatibility guide](../07-compatibility.md) to separate OS
+identification from evidence for each feature. The DNS session below does
+not validate settings menus or other Hisense models.
+
 | What | Status |
 |---|---|
 | Upstream DNS blocklist | Tested by its author on Hisense VIDAA sets in Europe (Germany), AdGuard Home on a Raspberry Pi; YouTube and Netflix reported working |

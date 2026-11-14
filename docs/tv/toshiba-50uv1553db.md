@@ -3,6 +3,10 @@
 Status: target device of this project. **Not yet verified** - the first
 hardware session is pending.
 
+Before following a guide for another TV, read the
+[compatibility guide](../07-compatibility.md). Evidence for a Hisense model
+does not verify a Toshiba setting or DNS result.
+
 | Fact | Detail |
 |---|---|
 | Brand / model | Toshiba 50UV1553DB, 50" |

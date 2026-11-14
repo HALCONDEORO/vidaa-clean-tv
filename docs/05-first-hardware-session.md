@@ -7,6 +7,9 @@ minutes.
 
 ## Before
 
+- Read the [compatibility guide](07-compatibility.md) and confirm the model,
+  region and operating system before borrowing steps from another TV. Keep
+  this session limited to the feature being tested.
 - Note the firmware version: **Settings → Support → About**, or
   **Settings → Support → System Info → Version** on older sets (paths from
   the official VIDAA manuals). Write it in the session log.
