@@ -1,7 +1,9 @@
 # Route 1: on-device settings (reversible)
 
-Time: about 5 minutes with the remote. Every step is a normal setting and
-can be switched back at any time.
+Time: about 5 minutes with the remote. The toggles below are normal
+settings and can be switched back at any time. **Remove User Data** in
+section 3 is the exception: deletion is irreversible, and this route does
+not require it - skip it.
 
 Menu names vary between VIDAA versions and brands. If a name does not match,
 open the privacy section and read down it: you are looking for anything about
@@ -64,8 +66,9 @@ Two things to know there:
 
 - Unticking the **VIDAA Account** consent signs you out of the account.
 - **Remove User Data**, in the same menu, deletes your stored usage data from
-  the TV and the cloud. That deletion cannot be undone, so read what it says
-  before confirming.
+  the TV and the cloud. That deletion cannot be undone, and this route does
+  not require it: skip it unless you have a specific reason, and read what it
+  says before confirming.
 
 ## 4. Hands-free voice (optional)
 

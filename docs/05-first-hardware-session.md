@@ -16,7 +16,10 @@ minutes.
 - Note exactly which privacy-related options exist and their exact wording.
   Menu names vary; the log needs the real ones, not the ones in docs/01.
 
-## During (route 1 only: on-device settings, reversible)
+## During (route 1 only: the reversible on-device settings)
+
+Skip the optional **Remove User Data** deletion in docs/01 section 3: it
+cannot be undone and is not part of this session.
 
 1. Follow docs/01 one step at a time.
 2. After each toggle, write down: what the option was called, what you set it
@@ -34,9 +37,9 @@ minutes.
 
 ## Rollback
 
-Every step in route 1 is a normal setting: switch it back the same way. If
-something behaves oddly after a change, revert that one change first and
-note it in the log.
+The settings changed in this session are normal toggles: switch each one
+back the same way. If something behaves oddly after a change, revert that
+one change first and note it in the log.
 
 ## Not in this session
 
