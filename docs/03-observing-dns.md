@@ -78,8 +78,10 @@ look closer, not to draw conclusions about content.
 
 ### Supported comparison lists
 
-The offline classifier compares plain hostnames and unconditional `||hostname^`
-rules, including their subdomains. It is not an AdGuard filtering engine:
+The offline classifier compares plain hostnames (exact name only) and
+unconditional `||hostname^` rules (the name and its subdomains), following
+[AdGuard DNS rule scope](https://adguard-dns.io/kb/general/dns-filtering-syntax/).
+It is not an AdGuard filtering engine:
 options (such as client conditions), exceptions, wildcards, hosts-file lines
 and regex filters are rejected with a line number instead of being silently
 misreported as coverage. Use a separate supported-syntax list for comparison;
