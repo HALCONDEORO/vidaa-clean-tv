@@ -32,6 +32,7 @@ ready. "Reversible" means you can put the setting back from the same menu.
 | [2 - DNS filtering](02-dns-filtering.md) | Stops ad and telemetry domains from resolving | An always-on computer, a Raspberry Pi, or router access | ~30 minutes |
 | [3 - Observe DNS first](03-observing-dns.md) | Shows what your TV actually talks to, so your rules come from evidence | The same setup as route 2 | One evening of watching |
 | [4 - Local control over MQTT](04-local-control-mqtt.md) | Preparatory notes for local remote control | Nothing yet - **untested on the sets covered here** | Read only |
+{:.responsive-cards}
 
 Route 4 is preparation, not a feature: no model covered by this project has
 a verified MQTT session yet, and the page says so at the top.

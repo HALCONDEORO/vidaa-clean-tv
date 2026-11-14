@@ -34,6 +34,7 @@ borrado no se puede deshacer y no es necesario para la primera sesión.**
 | [2: filtrado DNS](02-dns-filtering.md), en inglés | Bloquear la resolución de los dominios incluidos en el filtro de publicidad y telemetría | Un ordenador siempre encendido, una Raspberry Pi o acceso al router | Unos 30 minutos |
 | [3: observar primero el DNS](03-observing-dns.md), en inglés | Ver qué dominios consulta el televisor para basar las reglas en observaciones | El mismo equipo que para la ruta 2 | Una tarde o noche de uso |
 | [4: control local por MQTT](04-local-control-mqtt.md), en inglés | Notas preparatorias sobre control remoto local | Nada por ahora: **sin probar en los equipos cubiertos aquí** | Solo lectura |
+{:.responsive-cards}
 
 La ruta 4 es preparación, no una función verificada: ningún modelo cubierto
 por el proyecto tiene todavía una sesión MQTT comprobada. No es un paso que
