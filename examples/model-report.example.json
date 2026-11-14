@@ -1,0 +1,19 @@
+{
+  "model": "Synthetic TV model - not a hardware result",
+  "region": "Example region",
+  "session_date": "2026-01-01",
+  "firmware": "SYNTHETIC-VERSION",
+  "menus": ["Example settings > Privacy"],
+  "steps": [
+    {
+      "step": "Synthetic toggle, originally enabled",
+      "expected": "Example option changes",
+      "observed": "Synthetic illustration only; no television was tested",
+      "reverted": "yes"
+    }
+  ],
+  "apps": [
+    {"app": "Example player", "status": "untested", "notes": "No device test performed"}
+  ],
+  "outcome": "Synthetic schema example, not evidence of compatibility"
+}
