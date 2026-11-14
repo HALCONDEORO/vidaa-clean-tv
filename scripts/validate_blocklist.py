@@ -5,7 +5,7 @@ Part of VIDAA Clean TV. Standard library only, no network access.
 
 Checks:
   - every non-comment line is a well-formed AdGuard rule (||domain^) or a
-    plain hostname
+    plain hostname (wildcards are unsupported)
   - no duplicate rules
   - no rule shadowed by a parent-domain rule in the same list
   - optionally, no overlap with an upstream list (--upstream FILE),
@@ -41,8 +41,13 @@ def load_rules(path):
             if not line or line.startswith(("!", "#", "[", "//")):
                 continue
             m = ADGUARD_RULE_RE.match(line)
-            # Check label structure without dropping supported wildcard patterns.
-            if m and HOSTNAME_RE.fullmatch(m.group(1).replace("*", "a")):
+            # Recognizing glob syntax is not enough to certify redundancy or
+            # upstream coverage. Refuse it rather than issue a false OK.
+            if m and "*" in m.group(1):
+                errors.append(f"line {lineno}: wildcard rules are unsupported: "
+                              "cannot verify redundancy or upstream coverage")
+                continue
+            if m and HOSTNAME_RE.fullmatch(m.group(1)):
                 rules.append((lineno, line, m.group(1).lower()))
             elif HOSTNAME_RE.fullmatch(line):
                 rules.append((lineno, line, line.lower()))
