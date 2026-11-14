@@ -4,6 +4,38 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-14 - Refresh upstream coverage and trade-offs
+
+- docs/02 records IPanalytics' 11 November update (`045c377`): 13 new active
+  rules, two disabled options, and the reported six-rule Prime Video
+  trade-off. The old community-list coverage comparison is no longer treated
+  as current. No blocklist rules copied and no new hardware test claimed.
+- Explain Okazakee's author-stated curation policy, verification limits and
+  AdGuard exceptions; link its own format-specific guidance rather than
+  assuming all lists have equivalent behavior.
+- README points to the dated snapshot instead of a stale fixed rule count.
+
+## 2026-11-14 - Scope the TESTING capability claim (PR #38)
+
+- Limit the ADB/package-cleanup statement to the non-Android VIDAA sets
+  covered here, with a link to the compatibility guide. Session history
+  remains unchanged.
+
+## 2026-11-14 - Compatibility by OS and feature (PR #37)
+
+- Add docs/07 with evidence limits for settings, DNS filtering, MQTT and
+  separate model-specific native Home reports. Credit community authors,
+  link from the FAQ/model index and narrow README platform-wide claims to
+  project scope. No native code imported or new hardware testing claimed.
+
+## 2026-11-14 - Ignore inherited forward proxies (PR #36)
+
+- Query-log export ignores environment forward-proxy settings, keeping the
+  AdGuard Authorization header off an inherited proxy. A loopback regression
+  checks that the target authenticates while the proxy receives nothing.
+- SECURITY.md explains that required forward proxies are unsupported;
+  reverse-proxy base paths remain supported.
+
 ## 2026-11-09 - Observe startup and input-switch ads in docs/03
 
 - A short section shows how to catch the domains behind full-screen startup
@@ -126,6 +158,11 @@ unit of change.
   logs. Explicit domain thresholds are not accepted in timeline/client modes.
 - Document the option matrix and add offline CLI regressions. Valid table,
   rule, timeline and client-inventory output is unchanged.
+
+## 2026-11-08 - Manual CI trigger (from OliverS45, PR #31)
+
+- Add `workflow_dispatch` so the test workflow can be started manually.
+  Imported with authorship alongside the owner-reported DNS session.
 
 ## 2026-11-08 - AdGuard Home setup troubleshooting
 

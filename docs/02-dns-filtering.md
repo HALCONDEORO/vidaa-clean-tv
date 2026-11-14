@@ -49,9 +49,41 @@ group (for example `tv`), add the TV as a client by IP or MAC, then assign
 the VIDAA list to that group only. Every other device keeps your previous
 setup unchanged, and removing the TV from the group reverts it instantly.
 
-137 active rules, observed on real Hisense VIDAA sets in Europe; the author
-reports YouTube and Netflix keep working. Built for Hisense, so treat its
-effect on a Toshiba as probable but unproven until tested (see TESTING.md).
+The author's observations come from Hisense VIDAA sets in Europe/Germany;
+individual rule comments distinguish observed hosts from inferred candidates.
+The author reports YouTube and Netflix working, not every app or every model.
+Effects on Toshiba remain untested here (see [TESTING.md](../TESTING.md)).
+
+### Upstream snapshot: 11 November 2026
+
+[IPanalytics' update `045c377`](https://github.com/ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist/commit/045c377)
+adds 13 active rules and two documented-but-disabled options: **150 active,
+45 disabled, 195 total** at that commit, checked 14 November. These are
+upstream counts, not a hardware-verification result or a fixed promise about
+future subscriptions. Refreshing the subscription brings future changes too.
+
+The new active rules cover advertising/monetization reporting and resources,
+regional monetization backends, an advertising-portal CDN, Hisense/Xumo
+beacons and telemetry/tracking hosts. These additions overlap the reporting
+and monetization coverage that our 9 November community comparison described
+as missing. Do not add a second list just to fill that old gap.
+
+The same update explicitly documents the **Prime Video trade-off**: six
+recommendation API/UI rules remain active because upstream prioritizes the
+clean home screen, but owners reported missing Prime Video thumbnails and
+parts of its UI. That setup does not use Prime Video. See the six named hosts
+and smallest-change recovery procedure in
+[TROUBLESHOOTING.md](../TROUBLESHOOTING.md#an-app-stopped-loading-after-enabling-the-blocklist).
+The upstream author credits the
+[Owen3H fork](https://github.com/Owen3H/Hisense-VIDAA-DNS-Clean-TV-Blocklist)
+that disables those rules; this is a reported workaround, not a test here.
+
+Two additional options stay disabled upstream: `recommend-ui.vidaahub.com`
+can affect launcher tiles and artwork; `api-4know-eu.hismarttv.com` can affect
+search suggestions and voice answers. They are not default blocks, and this
+project does not recommend enabling them without observations on your set.
+No rules are copied into our supplement and no TV results are added by this
+documentation update.
 
 ## Other community lists
 
@@ -59,11 +91,14 @@ The upstream list above is the one this project documents and tests against.
 Others exist; know their trade-offs before mixing:
 
 - [Okazakee/tv-dns-blocklist](https://github.com/Okazakee/tv-dns-blocklist) -
-  actively maintained, multi-brand (Samsung, LG, Roku, VIDAA) with a
-  "non-breaking" curation policy. Its VIDAA section covers domains the
-  upstream list does not (for example several `*.vidaahub.com` reporting and
-  monetization hosts). More coverage usually means more breakage surface:
-  subscribe to one VIDAA list, not two at once.
+  multi-brand, with a "non-breaking" curation policy claimed by its author.
+  Its README distinguishes device tests on Sony/LG from resolution-level
+  checks on other platforms, so that label is not VIDAA hardware validation.
+  It also uses `$important` exceptions that can override other AdGuard
+  subscriptions, and offers separate Pi-hole files. The 11 November
+  IPanalytics update closes part of the earlier coverage gap; compare current
+  rules and exception semantics rather than choosing by rule count. Use one
+  TV list at a time and observe its effects before mixing lists.
 - Lists recommended in forum threads come and go:
   `jnmobilesoft/hisense-u8n-pihole-blocklist`, widely linked on Reddit in
   2025, already returns 404. This is the practical
