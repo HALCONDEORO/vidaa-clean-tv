@@ -11,7 +11,7 @@ date, firmware version, step, expected result, observed result, reverted
 
 | Claim | Source | Status on UV1553DB |
 |---|---|---|
-| VIDAA has no ADB, no sideloading, no package list | cleanyourtv.wiki, justatv.eu | Consistent across all sources; to be re-confirmed on device |
+| The Android ADB/package-cleanup route is not documented for the non-Android VIDAA sets covered here | cleanyourtv.wiki, justatv.eu; [compatibility scope](docs/07-compatibility.md) | No on-device capability check logged for this model; this is not a platform-wide claim about every VIDAA-branded set |
 | Privacy settings exist and are reversible | vidaa.com policy, justatv.eu, velmo.one | Menu names unverified on this model |
 | Upstream blocklist cleans the home screen, YouTube/Netflix keep working | ipanalytics (Hisense, Germany) | Not tested on Toshiba. Observed on one Hisense 65A67H, firmware V0000.09.09G.P0930 (session log, 2026-11-08) |
 | MQTT local control works on Toshiba VIDAA | warrenrees/ha_vidaatv README | Not tested on this model |
