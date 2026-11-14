@@ -34,15 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh label create upstream-watch --color BFD4F2 --description "Upstream blocklist change watcher" --force
-          num=$(gh issue list --label upstream-watch --state open --json number --limit 1 --jq '.[0].number // empty')
-          if [ -z "$num" ]; then
-            num=$(gh issue create --label upstream-watch \
-              --title "Upstream blocklist watch" \
-              --body "Tracks ipanalytics/Hisense-VIDAA-DNS-Clean-TV-Blocklist. Last seen commit: none yet." \
-              --json number --jq .number)
-          fi
-          echo "number=$num" >> "$GITHUB_OUTPUT"
+          scripts/tracking_issue.sh >> "$GITHUB_OUTPUT"
 
       - name: Diff against the last seen commit and report once per change
         env:

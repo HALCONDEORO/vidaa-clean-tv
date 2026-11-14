@@ -49,6 +49,17 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(active, set())
         self.assertEqual(disabled, set())
 
+    def test_hash_prefixed_rule_counts_as_disabled(self):
+        active, disabled = upstream_diff.parse_blocklist("# parked.example.com\n")
+        self.assertEqual(active, set())
+        self.assertEqual(disabled, {"parked.example.com"})
+
+    def test_scoped_adblock_options_fail_loudly(self):
+        for rule in ("||ads.example.com^$client=~browser",
+                     "ads.example.com$third-party"):
+            with self.subTest(rule=rule), self.assertRaises(ValueError):
+                upstream_diff.parse_blocklist(rule + "\n")
+
 
 class SummarizeTests(unittest.TestCase):
     def _write(self, content):

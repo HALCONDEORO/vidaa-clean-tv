@@ -9,8 +9,9 @@ Rules that keep the log useful and safe to share:
 
 - One session per file. Date only (`YYYY-MM-DD`), never exact times.
 - No IP addresses, MAC addresses, email addresses, local hostnames or account
-  identifiers anywhere in the file. The converter refuses files that contain
-  them.
+  identifiers. The converter only inspects the JSON block below and refuses
+  reports that contain them; it does not check or anonymize the prose around
+  it, so keep the whole file clean yourself.
 - Record `expected` before you look at the result, then `observed`. Honest
   surprises are the most valuable rows.
 - Menu names exactly as the TV shows them, even where they differ from the

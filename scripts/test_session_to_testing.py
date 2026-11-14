@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests for session_to_testing.py. Stdlib unittest, fully offline."""
 
+import contextlib
+import io
 import json
 import os
 import sys
@@ -10,6 +12,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import session_to_testing as stt
+import validate_model_report as shared
 
 
 VALID_REPORT = {
@@ -129,6 +132,7 @@ class ValidateTests(unittest.TestCase):
             "TV at 192.168.1.50 refused the setting",
             "seen from fe80::1 on the LAN",
             "MAC 3C:6A:9D:12:34:56",
+            "MAC aa-bb-cc-dd-ee-ff logged with dashes",
             "contact me at owner@example.com",
             "router box fritz.local",
             "changed at 21:45 exactly",
@@ -138,6 +142,49 @@ class ValidateTests(unittest.TestCase):
             report = dict(VALID_REPORT, outcome=value)
             with self.assertRaises(stt.ValidationError, msg=value):
                 stt.validate_report(report)
+
+    # Regressions from the independent review probes: the converter must
+    # apply exactly the shared contract, never a divergent copy.
+    def test_oversize_step_field_fails(self):
+        report = dict(VALID_REPORT)
+        report["steps"] = [dict(VALID_REPORT["steps"][0], observed="x" * 2001)]
+        with self.assertRaises(stt.ValidationError):
+            stt.validate_report(report)
+
+    def test_extra_app_field_fails(self):
+        report = dict(VALID_REPORT)
+        report["apps"] = [
+            {"app": "YouTube", "status": "works", "notes": "x", "extra": "y"}
+        ]
+        with self.assertRaises(stt.ValidationError):
+            stt.validate_report(report)
+
+    def test_control_character_fails(self):
+        report = dict(VALID_REPORT)
+        report["steps"] = [dict(VALID_REPORT["steps"][0], observed="bad\x1b[2k text")]
+        with self.assertRaises(stt.ValidationError):
+            stt.validate_report(report)
+
+    def test_error_messages_never_echo_input(self):
+        secret = "owner-secret@example.invalid"
+        report = dict(VALID_REPORT)
+        report[secret] = "x"
+        try:
+            stt.validate_report(report)
+            self.fail("unknown field should fail")
+        except stt.ValidationError as exc:
+            self.assertNotIn(secret, str(exc))
+        text = '{"model": "A", "%s": 1, "%s": 2}' % (secret, secret)
+        try:
+            stt.extract_json_block("```json\n" + text + "\n```\n")
+            self.fail("duplicate key should fail")
+        except stt.ValidationError as exc:
+            self.assertNotIn(secret, str(exc))
+
+    def test_normalized_output_passes_shared_validator(self):
+        report = stt.validate_report(dict(VALID_REPORT))
+        normalized = stt.to_normalized_report(report)
+        self.assertEqual(shared.validate_report(normalized), [])
 
 
 class OutputTests(unittest.TestCase):
@@ -157,6 +204,21 @@ class OutputTests(unittest.TestCase):
         ]
         rows = stt.to_testing_rows(report)
         self.assertIn("a \\| b c", rows[0])
+
+    def test_html_and_markup_render_inert(self):
+        nasty = (
+            '<img src=x onerror=alert(1)> [click](https://evil.example) '
+            '[run](javascript:alert(1)) `code` *em* _em2_ "quoted"'
+        )
+        report = dict(VALID_REPORT)
+        report["steps"] = [dict(VALID_REPORT["steps"][0], observed=nasty)]
+        row = stt.to_testing_rows(report)[0]
+        for raw in ("<img", "<", ">", "[click]", "[run]", "*em*"):
+            self.assertNotIn(raw, row)
+        self.assertIn("&lt;img", row)
+        self.assertIn("\\[click\\]", row)
+        self.assertIn("\\`code\\`", row)
+        self.assertIn("&quot;quoted&quot;", row)
 
     def test_normalized_report_roundtrip(self):
         report = stt.validate_report(dict(VALID_REPORT))
