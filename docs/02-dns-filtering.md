@@ -115,6 +115,19 @@ holds domains observed on our Toshiba that the upstream list misses. It starts
 empty on purpose: rules are added only from real DNS observations on the
 device, never guessed.
 
+Before you subscribe the TV to any list of your own, check the file offline:
+
+```
+python3 scripts/validate_blocklist.py your-list.txt
+```
+
+It rejects malformed rules (including scoped Adblock options like
+`$client=`, which this project does not interpret), duplicates and rules
+shadowed by a parent-domain rule, and `--upstream` checks your list adds
+nothing the upstream list already covers. This validates syntax only;
+whether the rules block the right domains comes from observing your own TV,
+never from the validator.
+
 ## Honest warnings
 
 From the upstream author and justatv.eu:
