@@ -4,6 +4,8 @@
 
 # VIDAA Clean TV
 
+English | [Español](README.es.md)
+
 [![test](https://github.com/HALCONDEORO/vidaa-clean-tv/actions/workflows/test.yml/badge.svg)](https://github.com/HALCONDEORO/vidaa-clean-tv/actions/workflows/test.yml)
 
 Documented privacy settings and DNS filtering guidance for smart TVs running VIDAA, plus offline tools to inspect DNS logs. The aim is to reduce ads and telemetry without rooting or changing firmware. **One owner-reported DNS-filtering session is logged (Hisense 65A67H); no model has a completed settings session yet.** Menu availability and results depend on the model, region and firmware; see [TESTING.md](TESTING.md).
@@ -68,6 +70,7 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 | [docs/04-local-control-mqtt.md](docs/04-local-control-mqtt.md) | Note on the local MQTT control interface |
 | [docs/07-compatibility.md](docs/07-compatibility.md) | Choose a route by OS and feature, without borrowing another model's test result |
 | [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) | Protocol for the first real cleanup session |
+| [docs/08-app-compatibility.md](docs/08-app-compatibility.md) | Per-app compatibility matrix: reported status, setup and limits, never a guarantee |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | When something breaks or does not match the docs |
 
 ## What this project does NOT do

@@ -1,5 +1,7 @@
 # Frequently asked questions
 
+English | [Español](FAQ.es.md)
+
 The questions people actually ask before buying, on day one, and when
 something breaks. Answers follow the project rule: verified claims say where
 they were verified, everything else is labeled as reported.
