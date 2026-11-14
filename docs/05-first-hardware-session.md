@@ -37,9 +37,9 @@ cannot be undone and is not part of this session.
 
 ## Rollback
 
-Every step in route 1 is a normal setting: switch it back the same way. If
-something behaves oddly after a change, revert that one change first and
-note it in the log.
+The settings changed in this session are normal toggles: switch each one
+back the same way. If something behaves oddly after a change, revert that
+one change first and note it in the log.
 
 ## Not in this session
 
