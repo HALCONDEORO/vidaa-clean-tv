@@ -17,6 +17,7 @@ logs in a report.
 - `fetch_query_log.py` talks only to the AdGuard Home address you give it,
   rejects base URLs containing credentials, queries or fragments before
   requesting a password, keeps network-error details out of diagnostics,
+  ignores environment/system proxies and connects directly to that address,
   refuses HTTP redirects (so credentials cannot be forwarded elsewhere), and
   writes the export atomically to a local file (owner-only mode 0600 on
   POSIX). A failed write leaves an existing export unchanged. An output
@@ -29,5 +30,8 @@ logs in a report.
   covered by `.gitignore`).
 
 Use HTTPS where available: Basic authentication over HTTP is not encrypted.
-HTTP remains supported for trusted local installations. URL validation does
+HTTP remains supported for trusted local installations. Proxy environment variables
+such as `HTTP_PROXY` and `HTTPS_PROXY` are intentionally ignored by the exporter;
+an installation that requires a forward proxy cannot use this tool as-is. A
+reverse proxy explicitly included in `--host` is still supported. URL validation does
 not prove ownership of a server; check the address before entering credentials.

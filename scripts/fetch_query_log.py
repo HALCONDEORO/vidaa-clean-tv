@@ -82,7 +82,9 @@ def fetch_page(host, user, password, limit, offset=0):
     if scheme not in ("http", "https"):
         raise ValueError(f"Unsupported URL scheme: {scheme!r}")
     req = urllib.request.Request(url, headers={"Authorization": basic_auth_header(user, password)})
-    opener = urllib.request.build_opener(_NoRedirect)
+    # Never route admin credentials or private query logs through a proxy
+    # inherited from the shell or operating system. Connect to --host directly.
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect)
     with opener.open(req, timeout=15) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
