@@ -86,8 +86,11 @@ options (such as client conditions), exceptions, wildcards, hosts-file lines
 and regex filters are rejected with a line number instead of being silently
 misreported as coverage. Use a separate supported-syntax list for comparison;
 do not strip conditions or exceptions from a real filter to make it pass.
-The standalone validator supports some wildcard syntax that the classifier
-does not evaluate. Passing validation does not guarantee classifier support.
+The standalone validator also rejects wildcard rules, including in an
+`--upstream` file: it cannot certify wildcard redundancy or coverage. This is
+an intentional restriction of these offline tools, not a claim that AdGuard
+rejects wildcard syntax. Do not remove active wildcard rules from a real
+filter just to make validation pass.
 
 ### Find the client identifier first
 

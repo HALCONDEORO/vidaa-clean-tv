@@ -462,14 +462,37 @@ class TestValidateBlocklist(TempFileMixin, unittest.TestCase):
         for number, error in enumerate(errors, 1):
             self.assertIn("line " + str(number) + ":", error)
 
-    def test_adguard_rules_keep_supported_wildcards_and_underscores(self):
-        path = self.write_tmp("||*.example.com^\n||ad*.example.com^\n"
-                              "||_service.example.com^\n||API-EU.example.com^")
+    def test_adguard_rules_keep_underscores_and_case(self):
+        path = self.write_tmp("||_service.example.com^\n||API-EU.example.com^")
         rules, errors = vb.load_rules(path)
         self.assertEqual(errors, [])
         self.assertEqual([row[2] for row in rules],
-                         ["*.example.com", "ad*.example.com",
-                          "_service.example.com", "api-eu.example.com"])
+                         ["_service.example.com", "api-eu.example.com"])
+
+    def test_wildcards_are_explicitly_unsupported(self):
+        for pattern in ("*.example.com", "ad*.example.com", "a*b*c.example.com"):
+            with self.subTest(pattern=pattern):
+                path = self.write_tmp("! header\n||" + pattern + "^\n")
+                rules, errors = vb.load_rules(path)
+                self.assertEqual(rules, [])
+                self.assertEqual(len(errors), 1)
+                self.assertIn("line 2", errors[0])
+                self.assertIn("wildcard", errors[0])
+
+    def test_wildcard_overlap_never_reports_false_success(self):
+        # AdGuard ||*.example.com^ covers ads.example.com, but this
+        # validator is not a glob-containment engine. Refuse certification.
+        literal = self.write_tmp("||ads.example.com^\n")
+        wildcard = self.write_tmp("||*.example.com^\n")
+        for arguments in ([literal, "--upstream", wildcard],
+                          [wildcard, "--upstream", literal], [wildcard]):
+            with self.subTest(arguments=arguments), redirect_stdout(io.StringIO()) as out, \
+                    redirect_stderr(io.StringIO()) as err:
+                with self.assertRaises(SystemExit) as ctx:
+                    self.run_validator(arguments)
+                self.assertEqual(ctx.exception.code, 1)
+                self.assertNotIn("OK ", out.getvalue())
+                self.assertIn("wildcard", err.getvalue())
 
     def test_invalid_adguard_rule_fails_cli(self):
         path = self.write_tmp("||example..com^\n")
