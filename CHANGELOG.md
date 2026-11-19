@@ -4,6 +4,16 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-19 - v0.1.0
+
+First tagged release. The project is early: documentation, query-log tools and CI only.
+
+- Reversible on-device privacy-settings guides and DNS-filtering guides (docs/01 to docs/07), English and Spanish.
+- Offline tools to inspect AdGuard Home query logs, with a synthetic example that needs no TV or network.
+- Hardware status: one owner-reported DNS-filtering session on a Hisense 65A67H is logged in TESTING.md. No model has a completed on-device settings session yet, and menu names remain unverified on the Toshiba 50UV1553DB.
+- No blocklist rules are bundled; the docs link to upstream community lists.
+- v0.x: script CLIs and output formats may still change.
+
 ## 2026-11-14 - Refresh upstream coverage and trade-offs
 
 - docs/02 records IPanalytics' 11 November update (`045c377`): 13 new active
