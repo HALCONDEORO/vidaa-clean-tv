@@ -36,6 +36,8 @@ This project works through the TV's own settings and the network it talks to. It
 
 New here? [docs/00-start-here.md](docs/00-start-here.md) walks from identifying your exact TV to one concrete reversible action.
 
+Have a local AdGuard Home native JSONL log? The [offline adapter](docs/03-observing-dns.md#local-adguard-home-native-logs-no-api-credentials) reads a copy without API credentials. No TV settings or DNS rules are changed.
+
 Try the [offline synthetic example](docs/06-offline-example.md) without a TV, router, credentials or network access.
 
 ## What you get
@@ -93,7 +95,7 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 
 ## Development
 
-`python3 scripts/test_classify_dns_log.py -v` runs the offline test suite (stdlib only). CI runs it, plus a syntax and duplicate validation of the supplement blocklist and a check that internal documentation links resolve, on every push and pull request across Python 3.10-3.14.
+`python3 -m unittest discover -s scripts -p 'test_*.py'` runs the offline test suite (stdlib only). CI runs it, plus a syntax and duplicate validation of the supplement blocklist and a check that internal documentation links resolve, on every push and pull request across Python 3.10-3.14.
 
 ## Contributing
 

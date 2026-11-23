@@ -129,3 +129,36 @@ Timeline minutes must also be at least 1. Conflicting options are rejected
 before the log or comparison list is read, with an error on stderr and exit
 code 2. No partial table or rules are printed. Run separate commands when you
 need both rules and a timeline; options are never silently ignored.
+
+## Local AdGuard Home native logs (no API credentials)
+
+If you already have a local copy of AdGuard Home's `data/querylog.json`
+or rotated `querylog.json.1`, read it directly. Copy the file rather than
+working on a log the server is writing. Do not upload the copy anywhere.
+
+```sh
+python3 scripts/classify_dns_log.py querylog-copy.json --format adguard-jsonl --clients
+python3 scripts/classify_dns_log.py querylog-copy.json --format adguard-jsonl \
+    --client 192.0.2.50 --timeline 1
+```
+
+This adapter uses the native `QH`, `IP`, `T` and `Result.IsFiltered` fields,
+not the API export schema. The same table, rules and timeline options work.
+Use `--format adguard-jsonl` explicitly, including for a single record.
+Blank lines are ignored. Malformed records fail with a line number, without
+printing private values. No network requests or input writes are made.
+
+The internal format is not a stable API. A changed upstream format may need
+an adapter update. A truncated final record from a live copy is an error,
+not a silently shortened report. Native logs still contain private client
+identifiers, timestamps, domains and response data. The existing
+`redact_dns_log.py` accepts API exports only, not native JSONL; do not use
+it on this format or assume a classifier report is anonymous.
+
+Format sources, not copied implementation:
+[AdGuard Home native-log discussion](https://github.com/AdguardTeam/AdGuardHome/discussions/5653),
+[entry fields](https://github.com/AdguardTeam/AdGuardHome/blob/bb189854/internal/querylog/entry.go),
+and [filter-result decoder](https://github.com/AdguardTeam/AdGuardHome/blob/bb189854/internal/querylog/decode.go).
+No AdGuard Home Go source or GPL code is included; this small adapter reuses
+this project's Python parser, validator and standard library. Tests use only
+synthetic `.invalid` names and documentation-range client addresses.

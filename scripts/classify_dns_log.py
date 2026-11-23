@@ -105,12 +105,60 @@ def iter_queries_pihole_ftl(path):
                          "Copy /etc/pihole/pihole-FTL.db and classify the copy.") from None
 
 
-def iter_queries_timed(path):
+def _unique_json_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON key")
+        result[key] = value
+    return result
+
+
+def iter_queries_adguard_jsonl(path):
+    """Read a local copy of AdGuard Home's native log, without network access.
+
+    Only QH, IP, T and Result.IsFiltered are consumed. The upstream internal
+    format is unstable. Reject malformed records without echoing private data.
+    """
+    with open(path, encoding="utf-8-sig") as stream:
+        for lineno, line in enumerate(stream, 1):
+            if not line.strip():
+                continue
+            try:
+                entry = json.loads(line, object_pairs_hook=_unique_json_keys)
+                if not isinstance(entry, dict):
+                    raise ValueError
+                domain = entry.get("QH")
+                client = entry.get("IP")
+                stamp = entry.get("T")
+                result = entry.get("Result")
+                if (not isinstance(domain, str)
+                        or not DOMAIN_RE.fullmatch(domain.strip())
+                        or not isinstance(client, str)
+                        or not isinstance(stamp, str)
+                        or not isinstance(result, dict)
+                        or not isinstance(result.get("IsFiltered", False), bool)):
+                    raise ValueError
+                timestamp = parse_timestamp(stamp)
+                if timestamp is None:
+                    raise ValueError
+                yield norm(domain), client, result.get("IsFiltered", False), timestamp
+            except (ValueError, RecursionError):
+                raise ValueError("Invalid native AdGuard JSONL record on line %d; "
+                                 "private input values are not shown" % lineno) from None
+            except UnicodeError:
+                raise ValueError("Native AdGuard JSONL must be UTF-8") from None
+
+
+def iter_queries_timed(path, input_format="auto"):
     """Yield (domain, client, filtered, timestamp_or_None) from any supported input.
 
     AdGuard Home JSON exports and Pi-hole FTL databases carry timestamps;
     dnsmasq and plain lists yield None in the last field.
     """
+    if input_format == "adguard-jsonl":
+        yield from iter_queries_adguard_jsonl(path)
+        return
     with open(path, "rb") as fh:
         magic = fh.read(len(SQLITE_MAGIC))
     if magic == SQLITE_MAGIC:
@@ -158,9 +206,9 @@ def iter_queries_timed(path):
             yield norm(candidate), "", False, None
 
 
-def iter_queries(path):
+def iter_queries(path, input_format="auto"):
     """Yield (domain, client, filtered) tuples from any supported input format."""
-    for domain, client, filtered, _ts in iter_queries_timed(path):
+    for domain, client, filtered, _ts in iter_queries_timed(path, input_format):
         yield domain, client, filtered
 
 
@@ -200,6 +248,8 @@ def is_blocked(domain, blocked):
 def main():
     try:
         run_cli()
+    except UnicodeError:
+        sys.exit("Native AdGuard JSONL must be UTF-8; private input values are not shown")
     except OSError:
         sys.exit("Cannot read a local input file. Check its path and permissions.")
     except ValueError as e:
@@ -209,6 +259,8 @@ def main():
 def run_cli():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("logfile", help="Query log: AdGuard Home JSON, Pi-hole FTL database, dnsmasq log, or plain domain list")
+    ap.add_argument("--format", choices=("auto", "adguard-jsonl"), default="auto",
+                    help="Use adguard-jsonl for a local native AdGuard Home querylog.json copy; auto keeps existing export formats")
     ap.add_argument("--client", help="Only count queries from this client IP (e.g. the TV)")
     ap.add_argument("--clients", action="store_true",
                     help="List client identifiers and query counts to help choose --client")
@@ -241,7 +293,7 @@ def run_cli():
     if args.clients:
         clients = Counter()
         filtered_counts = Counter()
-        for _domain, client, filtered in iter_queries(args.logfile):
+        for _domain, client, filtered in iter_queries(args.logfile, args.format):
             clients[client] += 1
             filtered_counts[client] += int(filtered)
         if not clients:
@@ -257,7 +309,7 @@ def run_cli():
         buckets = Counter()
         bucket_filtered = Counter()
         untimed = 0
-        for domain, client, filtered, ts in iter_queries_timed(args.logfile):
+        for domain, client, filtered, ts in iter_queries_timed(args.logfile, args.format):
             if args.client and client != args.client:
                 continue
             if ts is None:
@@ -288,7 +340,7 @@ def run_cli():
 
     counts = Counter()
     filtered_seen = set()
-    for domain, client, filtered in iter_queries(args.logfile):
+    for domain, client, filtered in iter_queries(args.logfile, args.format):
         if args.client and client != args.client:
             continue
         counts[domain] += 1
