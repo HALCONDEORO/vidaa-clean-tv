@@ -4,6 +4,14 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-23 - Native AdGuard Home log adapter
+
+- Read local native JSONL log copies with `--format adguard-jsonl`, reusing
+  the existing offline classifier, client filtering and UTC timeline.
+- Credit the upstream format references, add synthetic malformed-input
+  regressions and document privacy and unstable-format limits. No network,
+  new dependencies, block rules or hardware-verification claims added.
+
 ## 2026-11-09 - v0.1.0
 
 First tagged release (annotated tag v0.1.0 at a1cd5de, merge of #30). GitHub release page published 2026-11-19. Work merged to main after the tag is in the dated entries below and is not part of v0.1.0.

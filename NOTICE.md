@@ -2,6 +2,13 @@
 
 This project is original work, built on public research by others:
 
+- **AdguardTeam/AdGuardHome** (GPL-3.0) - native query log format reference
+  for the offline JSONL adapter. No source code copied, linked or vendored;
+  only documented data-field compatibility implemented with Python stdlib.
+  https://github.com/AdguardTeam/AdGuardHome/discussions/5653
+  https://github.com/AdguardTeam/AdGuardHome/blob/bb189854/internal/querylog/entry.go
+  https://github.com/AdguardTeam/AdGuardHome/blob/bb189854/internal/querylog/decode.go
+
 - **Gathin23/cleanyourtv** (MIT License) - goal inspiration. No code copied.
   https://github.com/Gathin23/cleanyourtv
 - **cleanyourtv.wiki Hisense compatibility page** - documentation source for
