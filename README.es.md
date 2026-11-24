@@ -48,6 +48,7 @@ guía en español. Las demás guías técnicas enlazadas siguen en inglés.
 | Vas a probar un VIDAA por primera vez | [Protocolo de primera sesión](docs/05-first-hardware-session.es.md) |
 | Quieres probar las herramientas sin televisor ni red | [Ejemplo sintético sin conexión](docs/06-offline-example.md) |
 | Te preocupa que deje de funcionar una aplicación | [Compatibilidad por aplicación](docs/08-app-compatibility.md) y [solución de problemas](TROUBLESHOOTING.md) |
+| Quieres compartir tus resultados sin exponer tu navegación | [Paquete de sesión](docs/09-share-your-results.es.md) |
 
 Si la red es compartida, no cambies su DNS sin el acuerdo de las personas
 que puedan verse afectadas. Limita el filtro al televisor cuando sea posible.
