@@ -41,7 +41,7 @@ def extract_json_block(text):
         raise ValidationError("no ```json fenced block found in the file")
     try:
         return json.loads(match.group(1), object_pairs_hook=no_duplicate_keys)
-    except ValueError:
+    except (ValueError, RecursionError):
         # Neutral on purpose: never echo the offending key or value.
         raise ValidationError("the JSON block does not parse or repeats a field")
 

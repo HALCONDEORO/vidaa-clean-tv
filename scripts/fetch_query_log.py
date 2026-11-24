@@ -36,6 +36,10 @@ import urllib.parse
 import urllib.request
 
 
+# Per-page byte bound, independent of server compliance with entry limits.
+MAX_PAGE_BYTES = 16 * 1024 * 1024
+
+
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     """Refuse redirects: following one would forward the Authorization header
     (your admin credentials) to the redirect target."""
@@ -86,14 +90,32 @@ def fetch_page(host, user, password, limit, offset=0):
     # inherited from the shell or operating system. Connect to --host directly.
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect)
     with opener.open(req, timeout=15) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+        # Read one extra byte to detect a body exceeding the cap. Never trust
+        # Content-Length: servers may omit it or stream a larger response.
+        raw = resp.read(MAX_PAGE_BYTES + 1)
+        if len(raw) > MAX_PAGE_BYTES:
+            raise ValueError("AdGuard Home page exceeds the 16 MiB byte limit; "
+                             "use a lower --limit")
+        # read(size) does not itself raise IncompleteRead for a short fixed-
+        # length body, unlike read() without a size. Preserve that detection.
+        remaining = getattr(resp, "length", None)
+        if isinstance(remaining, int) and remaining > 0:
+            raise http.client.IncompleteRead(b"", remaining)
+        try:
+            return json.loads(raw.decode("utf-8"))
+        except (UnicodeError, ValueError, RecursionError):
+            # Decoder errors can quote raw bytes. Do not echo private log data.
+            raise ValueError("Invalid JSON response from AdGuard Home") from None
 
 
 def fetch_all_pages(host, user, password, limit, pages):
     """Fetch up to `pages` consecutive pages and merge their 'data' lists.
 
-    Stops early when a page comes back short (fewer entries than `limit`),
-    which marks the oldest available entries. Returns
+    Stops early when a page comes back short (fewer entries than `limit`).
+    Offset pages are separate reads of a live log, not a snapshot: arrivals,
+    expiry, clearing or rotation may repeat or omit rows. Do not deduplicate
+    by domain, timestamp or row equality: legitimate events may share them.
+    Returns
     (merged_dict, pages_fetched, maybe_more): maybe_more is True when fetching
     stopped on a full page, i.e. the export may be incomplete.
     """
@@ -183,9 +205,15 @@ def main():
                  "any existing export was left unchanged.")
     entries = len(data.get("data", [])) if isinstance(data, dict) else 0
     print(f"Wrote {entries} entries ({pages_fetched} page(s)) to {args.output}")
+    if pages_fetched > 1:
+        print("Warning: multi-page offset export is not a snapshot. Changes to the live log "
+              "can repeat or omit entries, even when the final page is short. "
+              "Rows are kept as returned; counts are not guaranteed unique or complete.",
+              file=sys.stderr)
     if maybe_more:
         print("Warning: the last page fetched was full, so the log may hold older entries "
-              "that were not exported. Re-run with a higher --pages value to be sure.",
+              "that were not exported. A higher --pages value may fetch older entries, "
+              "but does not guarantee a complete export.",
               file=sys.stderr)
 
 

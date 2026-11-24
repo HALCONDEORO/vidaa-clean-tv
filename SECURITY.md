@@ -18,7 +18,9 @@ logs in a report.
   rejects base URLs containing credentials, queries or fragments before
   requesting a password, keeps network-error details out of diagnostics,
   ignores environment/system proxies and connects directly to that address,
-  refuses HTTP redirects (so credentials cannot be forwarded elsewhere), and
+  refuses HTTP redirects (so credentials cannot be forwarded elsewhere),
+  caps each response page at 16 MiB regardless of the entry count or declared
+  Content-Length, rejects oversized or invalid JSON without quoting log data, and
   writes the export atomically to a local file (owner-only mode 0600 on
   POSIX). A failed write leaves an existing export unchanged. An output
   symlink is replaced rather than followed; Windows access follows the
