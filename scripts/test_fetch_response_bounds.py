@@ -50,9 +50,13 @@ class ResponseBoundTests(unittest.TestCase):
             with self.subTest(body=body), self.assertRaisesRegex(ValueError, '^Invalid JSON response from AdGuard Home$'):
                 self.fetch(body)
 
-    def test_deep_json_rejected_without_traceback(self):
-        with self.assertRaisesRegex(ValueError, '^Invalid JSON response from AdGuard Home$'):
-            self.fetch(b'[' * 2000 + b']' * 2000)
+    def test_decoder_recursion_error_is_private(self):
+        # The C decoder's depth threshold varies across supported Python versions.
+        # Test our exception contract, not one interpreter's recursion threshold.
+        with patch.object(m.json, 'loads', side_effect=RecursionError('private-secret')):
+            with self.assertRaisesRegex(ValueError, '^Invalid JSON response from AdGuard Home$') as error:
+                self.fetch(b'[]')
+        self.assertNotIn('private-secret', str(error.exception))
 
     def test_failed_fetch_does_not_replace_existing_export(self):
         with tempfile.TemporaryDirectory() as tmp:
