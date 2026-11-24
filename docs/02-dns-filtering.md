@@ -1,9 +1,9 @@
 # Route 2: DNS filtering
 
-**What it is:** the TV asks a DNS resolver for the address of every domain it
-wants to reach. A filtering resolver answers "does not exist" for ad and
-telemetry domains. The TV itself is not modified at all. Revert by removing
-the filter.
+**What it is:** a DNS filter can block matching domain lookups that reach it.
+That is not a view of every TV connection: cached answers, other resolvers or
+encrypted DNS can leave traffic outside its query log. The TV software is not
+modified. Revert by restoring your recorded DNS settings and removing the list.
 
 **What it is not:** a TV setting. It is network administration, and depending
 on how you set it up it can affect every device on the network. Do not start
@@ -18,9 +18,10 @@ this on a shared network without the agreement of everyone affected.
 - **C. Router-level DNS filtering.** Only if the router supports per-device
   filtering rules.
 
-Point only the TV at the filter when possible (manual DNS on the TV, or
-per-client rules in AdGuard Home / Pi-hole), so nothing else in the house is
-affected.
+Point only the TV at a dedicated resolver when possible, or use a filtering
+system whose client/group isolation you have verified. Setting manual DNS on
+the TV does not isolate a newly enabled list on an AdGuard Home instance that
+other devices already use. Record the previous DNS and list settings first.
 
 ## The blocklist
 
@@ -41,8 +42,21 @@ if your filter wants plain hostnames.
 
 ### Limit the filter to the TV only
 
-AdGuard Home: **Client settings** → add the TV (by IP or MAC), and under
-**Filters** choose only the VIDAA list for that client.
+AdGuard Home: do not assume **Client settings** offers a per-client blocklist
+selector. As checked 24 November 2026, the upstream
+[per-client list assignment proposal](https://github.com/AdguardTeam/AdGuardHome/issues/8274)
+is still open. The official
+[client guide](https://adguard-dns.io/kb/adguard-home/clients/) documents custom
+rules using `client`/`ctag`, not assigning a downloaded subscription to one TV.
+MAC identification also requires AdGuard Home to be the network's DHCP server.
+
+For a first reversible trial, use a separate AdGuard Home instance used only
+by the TV, and change only the TV's DNS settings. If that is not available,
+stop before enabling this subscription on a shared resolver. A client entry
+alone does not make the subscription TV-only. Custom scoped rules are an
+advanced alternative, not a way to scope an unmodified downloaded list; this
+project's offline validator deliberately rejects rule options. Do not strip
+options or disable every other client's protection as a workaround.
 
 Pi-hole: **Group Management** (v5; **Clients/Groups** on v6) → create a
 group (for example `tv`), add the TV as a client by IP or MAC, then assign

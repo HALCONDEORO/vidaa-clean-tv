@@ -1,7 +1,21 @@
 # Route 3: observe what your TV talks to
 
-Goal: replace guesses with observations. Record everything the TV resolves,
-then classify it.
+Goal: replace guesses with observations. Classify queries that reached the
+selected resolver during the recorded period, not every connection from the TV.
+
+An empty log does not prove that the TV is offline, telemetry stopped or a
+filter succeeded. Check the selected client, time window, export completeness
+and whether a normal TV action produces entries. A lookup from a laptop tests
+only that laptop's path, not the TV's. The
+[AdGuard troubleshooting guide](https://adguard-dns.io/kb/adguard-home/faq/)
+explains checking the resolver and query log on the device making the lookup.
+
+Community author [carteakey's alvidaa report](https://carteakey.dev/blog/alvidaa/alvidaa/)
+describes direct and encrypted DNS observations on a Hisense 50A51HUV/MTK9602.
+That is model/firmware-specific reported evidence, not a Toshiba 50UV1553DB
+test or proof about every VIDAA set. It motivates checking visibility, not
+copying its root, firewall or update-freezing procedures. This project adds
+none of those. DNS counts do not reveal payload contents or all outbound traffic.
 
 1. Set up AdGuard Home (route 2, option A) or Pi-hole (option B) and point
    only the TV at it.
@@ -25,7 +39,9 @@ then classify it.
    - The exported `querylog.json` is a record of what your TV looked up:
      treat it as private browsing data. Keep it local and never commit it
      (it is covered by `.gitignore` along with `.env`).
-   One page holds 500 entries by default; a day or two of TV traffic is often more. `--pages N` keeps fetching older pages until the log runs out (max 100 pages). If the export stops on a full page, the script warns that older entries may remain; raise N until the warning disappears.
+   One page holds 500 entries by default; a day or two of TV traffic is often more. `--pages N` requests older offset pages, stopping on a short page (max 100 pages). If the last page is full, older entries may remain. Increasing N may fetch more, but does not prove completeness.
+
+   Multi-page export is **not a snapshot**. Each page reads a live log; arrivals, expiry, clearing or rotation can repeat or omit entries, even if the final page is short. The exporter warns whenever it fetched multiple pages and keeps rows as returned. Do not treat row counts as unique query counts or proof that a time range is complete. Do not deduplicate by domain, timestamp or identical JSON: separate legitimate queries may share those values. The API's `older_than` filter is strictly earlier than its timestamp, so switching blindly to that cursor can omit equal-timestamp events at a page boundary. A separately obtained stable local log copy may support consistent offline analysis; this HTTP exporter does not provide that guarantee.
 
 4. Run `scripts/classify_dns_log.py` on the export. It aggregates domains,
    marks which are already covered by the upstream blocklist, and prints

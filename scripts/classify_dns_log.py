@@ -168,7 +168,9 @@ def iter_queries_timed(path, input_format="auto"):
         text = fh.read()
     try:
         data = json.loads(text)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):
+        # RecursionError: JSON nested beyond the interpreter limit is not a
+        # usable log; treat it like any other unrecognized format.
         data = None
     if isinstance(data, dict) and isinstance(data.get("data"), list):
         for entry in data["data"]:

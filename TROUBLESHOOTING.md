@@ -125,8 +125,13 @@ a laptop on a guest network or VPN, or Wi-Fi client isolation on the router.
 
 ## The query log shows no traffic from the TV
 
-The TV is not using the filter. First confirm another device on the same
-network gets answers from AdGuard Home (see the previous section). Then:
+Visibility is not confirmed. An empty time window, client filter or partial
+export can hide queries; cached lookups, another resolver or encrypted DNS
+can also be outside this log. It is not proof that telemetry stopped or that
+filtering succeeded. Another device getting answers checks only its own path
+(see the previous section), not the TV's. First check the log's client/time
+filters and export completeness, then use a normal TV action to look for new
+entries. Keep the raw log private. Then:
 
 - Check the DNS address on the TV's network information screen. On some sets
   DNS can only be changed after switching the whole IP setting to manual;
