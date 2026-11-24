@@ -1,7 +1,11 @@
 name: test
 
 on:
+  # push only on main: a same-repo PR branch also triggers pull_request, and
+  # firing both creates duplicate check runs for one head (one got stuck
+  # in_progress despite conclusion=success on PR #63).
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
