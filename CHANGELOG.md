@@ -4,6 +4,22 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-24 - Shareable DNS session pack
+
+- Add scripts/build_session_pack.py: build an offline HTML report from one
+  or two supported local DNS logs, with an optional before/after comparison
+  that disclaims causality. Privacy is the default, not a setting: no domain
+  is named unless the author lists it with --name-domain (a blocklist match
+  is never enough, and parent rules never lift a subdomain's private label);
+  file names, client addresses, timestamps and answers never enter the
+  report. A zero-query parse is refused as a format problem rather than
+  reported as inactivity. All inputs (both logs, every blocklist) are
+  protected against overwrite via aliases, and the report is written
+  atomically.
+- Document it in docs/09-share-your-results.md and its Spanish version, and
+  link both from the READMEs. No TV, resolver, credentials or network
+  involved; the log never leaves the owner's machine.
+
 ## 2026-11-24 - Bound AdGuard query-log response pages
 
 - Cap each downloaded query-log page at 16 MiB, independent of entry limits

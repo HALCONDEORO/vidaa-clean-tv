@@ -76,6 +76,7 @@ Start with [FAQ.md](FAQ.md) if you are deciding whether any of this is for you.
 | [docs/07-compatibility.md](docs/07-compatibility.md) | Choose a route by OS and feature, without borrowing another model's test result |
 | [docs/05-first-hardware-session.md](docs/05-first-hardware-session.md) | Protocol for the first real cleanup session |
 | [docs/08-app-compatibility.md](docs/08-app-compatibility.md) | Per-app compatibility matrix: reported status, setup and limits, never a guarantee |
+| [docs/09-share-your-results.md](docs/09-share-your-results.md) | Turn a local DNS log into a privacy-safe HTML report you can share |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | When something breaks or does not match the docs |
 | [SECURITY.md](SECURITY.md) | What to check before trusting a report or sharing logs |
 | [NOTICE.md](NOTICE.md) / [RELEASE.md](RELEASE.md) | Credits, versioning and release notes |
