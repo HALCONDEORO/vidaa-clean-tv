@@ -4,6 +4,15 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-24 - Scope DNS isolation and query-log visibility
+
+- Remove the unverified AdGuard per-client subscription-selector steps.
+  Explain why enabling a list on a shared resolver is not TV-only and give
+  a dedicated-resolver trial route without changing other clients' protection.
+- Limit DNS-log conclusions to visible queries. Attribute the model-specific
+  community report without copying root/firewall procedures or claiming a
+  Toshiba test. No rules, services or devices changed.
+
 ## 2026-11-23 - Native AdGuard Home log adapter
 
 - Read local native JSONL log copies with `--format adguard-jsonl`, reusing

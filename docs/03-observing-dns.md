@@ -1,7 +1,21 @@
 # Route 3: observe what your TV talks to
 
-Goal: replace guesses with observations. Record everything the TV resolves,
-then classify it.
+Goal: replace guesses with observations. Classify queries that reached the
+selected resolver during the recorded period, not every connection from the TV.
+
+An empty log does not prove that the TV is offline, telemetry stopped or a
+filter succeeded. Check the selected client, time window, export completeness
+and whether a normal TV action produces entries. A lookup from a laptop tests
+only that laptop's path, not the TV's. The
+[AdGuard troubleshooting guide](https://adguard-dns.io/kb/adguard-home/faq/)
+explains checking the resolver and query log on the device making the lookup.
+
+Community author [carteakey's alvidaa report](https://carteakey.dev/blog/alvidaa/alvidaa/)
+describes direct and encrypted DNS observations on a Hisense 50A51HUV/MTK9602.
+That is model/firmware-specific reported evidence, not a Toshiba 50UV1553DB
+test or proof about every VIDAA set. It motivates checking visibility, not
+copying its root, firewall or update-freezing procedures. This project adds
+none of those. DNS counts do not reveal payload contents or all outbound traffic.
 
 1. Set up AdGuard Home (route 2, option A) or Pi-hole (option B) and point
    only the TV at it.

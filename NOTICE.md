@@ -45,5 +45,10 @@ This project is original work, built on public research by others:
   files copied and no native modification supported here.
   https://github.com/nineodernein/hisense-vidaa-clean-home
 
+- **carteakey/alvidaa** - model-specific community DNS-observability report,
+  credited for the visibility caution only. No code, block rules, root,
+  certificate, firewall or update-freezing instructions copied or supported.
+  https://carteakey.dev/blog/alvidaa/alvidaa/
+
 "VIDAA" and "Hisense" are trademarks of their respective owners. This is an
 independent community project, not affiliated with or endorsed by them.
