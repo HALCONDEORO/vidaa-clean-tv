@@ -25,7 +25,9 @@ then classify it.
    - The exported `querylog.json` is a record of what your TV looked up:
      treat it as private browsing data. Keep it local and never commit it
      (it is covered by `.gitignore` along with `.env`).
-   One page holds 500 entries by default; a day or two of TV traffic is often more. `--pages N` keeps fetching older pages until the log runs out (max 100 pages). If the export stops on a full page, the script warns that older entries may remain; raise N until the warning disappears.
+   One page holds 500 entries by default; a day or two of TV traffic is often more. `--pages N` requests older offset pages, stopping on a short page (max 100 pages). If the last page is full, older entries may remain. Increasing N may fetch more, but does not prove completeness.
+
+   Multi-page export is **not a snapshot**. Each page reads a live log; arrivals, expiry, clearing or rotation can repeat or omit entries, even if the final page is short. The exporter warns whenever it fetched multiple pages and keeps rows as returned. Do not treat row counts as unique query counts or proof that a time range is complete. Do not deduplicate by domain, timestamp or identical JSON: separate legitimate queries may share those values. The API's `older_than` filter is strictly earlier than its timestamp, so switching blindly to that cursor can omit equal-timestamp events at a page boundary. A separately obtained stable local log copy may support consistent offline analysis; this HTTP exporter does not provide that guarantee.
 
 4. Run `scripts/classify_dns_log.py` on the export. It aggregates domains,
    marks which are already covered by the upstream blocklist, and prints

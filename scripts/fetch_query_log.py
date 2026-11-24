@@ -92,8 +92,11 @@ def fetch_page(host, user, password, limit, offset=0):
 def fetch_all_pages(host, user, password, limit, pages):
     """Fetch up to `pages` consecutive pages and merge their 'data' lists.
 
-    Stops early when a page comes back short (fewer entries than `limit`),
-    which marks the oldest available entries. Returns
+    Stops early when a page comes back short (fewer entries than `limit`).
+    Offset pages are separate reads of a live log, not a snapshot: arrivals,
+    expiry, clearing or rotation may repeat or omit rows. Do not deduplicate
+    by domain, timestamp or row equality: legitimate events may share them.
+    Returns
     (merged_dict, pages_fetched, maybe_more): maybe_more is True when fetching
     stopped on a full page, i.e. the export may be incomplete.
     """
@@ -183,9 +186,15 @@ def main():
                  "any existing export was left unchanged.")
     entries = len(data.get("data", [])) if isinstance(data, dict) else 0
     print(f"Wrote {entries} entries ({pages_fetched} page(s)) to {args.output}")
+    if pages_fetched > 1:
+        print("Warning: multi-page offset export is not a snapshot. Changes to the live log "
+              "can repeat or omit entries, even when the final page is short. "
+              "Rows are kept as returned; counts are not guaranteed unique or complete.",
+              file=sys.stderr)
     if maybe_more:
         print("Warning: the last page fetched was full, so the log may hold older entries "
-              "that were not exported. Re-run with a higher --pages value to be sure.",
+              "that were not exported. A higher --pages value may fetch older entries, "
+              "but does not guarantee a complete export.",
               file=sys.stderr)
 
 

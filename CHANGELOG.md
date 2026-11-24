@@ -4,6 +4,11 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-24 - Live offset export limitations
+
+- Warn on every multi-page DNS export that separate live offset reads are not a snapshot and can repeat or omit entries. A short final page does not prove completeness.
+- Preserve rows rather than deduplicate legitimate repeated queries by domain, timestamp or JSON equality. Add synthetic arrival, expiry and equal-timestamp fixtures. No cursor migration or unique-count guarantee.
+
 ## 2026-11-23 - Native AdGuard Home log adapter
 
 - Read local native JSONL log copies with `--format adguard-jsonl`, reusing
