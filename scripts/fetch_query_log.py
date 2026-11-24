@@ -36,6 +36,10 @@ import urllib.parse
 import urllib.request
 
 
+# Per-page byte bound, independent of server compliance with entry limits.
+MAX_PAGE_BYTES = 16 * 1024 * 1024
+
+
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     """Refuse redirects: following one would forward the Authorization header
     (your admin credentials) to the redirect target."""
@@ -86,7 +90,22 @@ def fetch_page(host, user, password, limit, offset=0):
     # inherited from the shell or operating system. Connect to --host directly.
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect)
     with opener.open(req, timeout=15) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+        # Read one extra byte to detect a body exceeding the cap. Never trust
+        # Content-Length: servers may omit it or stream a larger response.
+        raw = resp.read(MAX_PAGE_BYTES + 1)
+        if len(raw) > MAX_PAGE_BYTES:
+            raise ValueError("AdGuard Home page exceeds the 16 MiB byte limit; "
+                             "use a lower --limit")
+        # read(size) does not itself raise IncompleteRead for a short fixed-
+        # length body, unlike read() without a size. Preserve that detection.
+        remaining = getattr(resp, "length", None)
+        if isinstance(remaining, int) and remaining > 0:
+            raise http.client.IncompleteRead(b"", remaining)
+        try:
+            return json.loads(raw.decode("utf-8"))
+        except (UnicodeError, ValueError, RecursionError):
+            # Decoder errors can quote raw bytes. Do not echo private log data.
+            raise ValueError("Invalid JSON response from AdGuard Home") from None
 
 
 def fetch_all_pages(host, user, password, limit, pages):

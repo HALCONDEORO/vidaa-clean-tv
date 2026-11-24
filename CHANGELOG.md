@@ -4,6 +4,13 @@ Dated entries, newest first. Releases are annotated git tags (vX.Y.Z, see
 RELEASE.md); the first tag is v0.1.0. Between tags, "merged to main" is the
 unit of change.
 
+## 2026-11-24 - Bound AdGuard query-log response pages
+
+- Cap each downloaded query-log page at 16 MiB, independent of entry limits
+  and HTTP Content-Length. Oversized and invalid JSON responses fail without
+  quoting private log bytes or replacing an existing export. Lower `--limit`
+  when a legitimate page is too large. No credentials, DNS rules or TV changed.
+
 ## 2026-11-23 - Native AdGuard Home log adapter
 
 - Read local native JSONL log copies with `--format adguard-jsonl`, reusing
